@@ -147,9 +147,9 @@
             <form id="addFabricForm" method="POST" action="{{ route('user.customer.fabric.store', $customer->id) }}">
                 @csrf
                 <div class="modal-body">
-                    <div class="alert alert-info">
+                    <!-- <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i> Rali values will be automatically multiplied by 34 when saved. Stick values are saved as entered.
-                    </div>
+                    </div> -->
                     
                     <div class="row">
                         <div class="col-md-6">
@@ -246,9 +246,9 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
-                    <div class="alert alert-info">
+                    <!-- <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i> Rali values will be automatically multiplied by 34 when saved. Stick values are saved as entered.
-                    </div>
+                    </div> -->
                     
                     <div class="row">
                         <div class="col-md-6">
