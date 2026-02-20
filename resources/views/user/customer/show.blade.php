@@ -136,7 +136,7 @@
 
 <!-- Add Fabric Calculation Modal -->
 <div class="modal fade" id="addFabricModal" tabindex="-1" role="dialog" aria-labelledby="addFabricModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addFabricModalLabel">Add Fabric Calculation for {{ $customer->name }}</h5>
@@ -147,85 +147,85 @@
             <form id="addFabricForm" method="POST" action="{{ route('user.customer.fabric.store', $customer->id) }}">
                 @csrf
                 <div class="modal-body">
-                    <!-- <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Rali values will be automatically multiplied by 34 when saved. Stick values are saved as entered.
-                    </div> -->
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="stick">Stick Value</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="stick" name="stick" placeholder="Enter stick value">
-                                <small class="text-muted">Saved as entered (no multiplication)</small>
+                    <!-- Mobile/Desktop Responsive Row -->
+                    <div class="form-row">
+                        <!-- Stick Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="stick" class="small">Stick</label>
+                                <input type="number" step="0.01" min="0" class="form-control form-control-sm" id="stick" name="stick" placeholder="Stick" autofocus>
+                                <small class="text-muted">As entered</small>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="one_rali">One Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="one_rali" name="one_rali">
+                        
+                        <!-- One Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="one_rali" class="small">One Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="one_rali" name="one_rali" placeholder="One">
                                     <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="one_rali_display">0.00</span>
+                                        <span class="input-group-text bg-info text-white p-1" id="one_rali_display" style="min-width: 45px;">0</span>
                                     </div>
                                 </div>
-                                <small class="text-muted">Saved as: <span id="one_rali_saved">0.00</span> (×34)</small>
+                                <small class="text-muted">×34: <span id="one_rali_saved">0</span></small>
+                            </div>
+                        </div>
+                        
+                        <!-- Two Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="two_rali" class="small">Two Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="two_rali" name="two_rali" placeholder="Two">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-info text-white p-1" id="two_rali_display" style="min-width: 45px;">0</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">×34: <span id="two_rali_saved">0</span></small>
+                            </div>
+                        </div>
+                        
+                        <!-- Tree Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="tree_rali" class="small">Tree Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="tree_rali" name="tree_rali" placeholder="Tree">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-info text-white p-1" id="tree_rali_display" style="min-width: 45px;">0</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">×34: <span id="tree_rali_saved">0</span></small>
+                            </div>
+                        </div>
+                        
+                        <!-- Four Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="four_rali" class="small">Four Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="four_rali" name="four_rali" placeholder="Four">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-info text-white p-1" id="four_rali_display" style="min-width: 45px;">0</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">×34: <span id="four_rali_saved">0</span></small>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="two_rali">Two Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="two_rali" name="two_rali">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="two_rali_display">0.00</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Saved as: <span id="two_rali_saved">0.00</span> (×34)</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="tree_rali">Tree Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="tree_rali" name="tree_rali">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="tree_rali_display">0.00</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Saved as: <span id="tree_rali_saved">0.00</span> (×34)</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="four_rali">Four Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="four_rali" name="four_rali">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="four_rali_display">0.00</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Saved as: <span id="four_rali_saved">0.00</span> (×34)</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <div class="alert alert-success">
-                                <strong>Ilets Calculation:</strong> <span id="ilets_preview">0.00</span> (Sum of all Ralis ÷ 17)
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <div class="alert alert-success py-2 mb-0">
+                                <strong>Ilets:</strong> <span id="ilets_preview">0.00</span> <small class="text-muted">(Sum of Ralis ÷ 17)</small>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-whitesmoke br">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Add Calculation</button>
+                    <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-sm btn-primary" id="addSubmitBtn">Add Calculation</button>
                 </div>
             </form>
         </div>
@@ -234,7 +234,7 @@
 
 <!-- Edit Fabric Calculation Modal -->
 <div class="modal fade" id="editFabricModal" tabindex="-1" role="dialog" aria-labelledby="editFabricModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editFabricModalLabel">Edit Fabric Calculation</h5>
@@ -246,85 +246,85 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
-                    <!-- <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Rali values will be automatically multiplied by 34 when saved. Stick values are saved as entered.
-                    </div> -->
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="edit_stick">Stick Value</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="edit_stick" name="stick" placeholder="Enter stick value">
-                                <small class="text-muted">Saved as entered (no multiplication)</small>
+                    <!-- Mobile/Desktop Responsive Row -->
+                    <div class="form-row">
+                        <!-- Stick Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="edit_stick" class="small">Stick</label>
+                                <input type="number" step="0.01" min="0" class="form-control form-control-sm" id="edit_stick" name="stick" placeholder="Stick">
+                                <small class="text-muted">As entered</small>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="edit_one_rali">One Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_one_rali" name="one_rali">
+                        
+                        <!-- One Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="edit_one_rali" class="small">One Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_one_rali" name="one_rali" placeholder="One">
                                     <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="edit_one_rali_display">0.00</span>
+                                        <span class="input-group-text bg-info text-white p-1" id="edit_one_rali_display" style="min-width: 45px;">0</span>
                                     </div>
                                 </div>
-                                <small class="text-muted">Saved as: <span id="edit_one_rali_saved">0.00</span> (×34)</small>
+                                <small class="text-muted">×34: <span id="edit_one_rali_saved">0</span></small>
+                            </div>
+                        </div>
+                        
+                        <!-- Two Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="edit_two_rali" class="small">Two Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_two_rali" name="two_rali" placeholder="Two">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-info text-white p-1" id="edit_two_rali_display" style="min-width: 45px;">0</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">×34: <span id="edit_two_rali_saved">0</span></small>
+                            </div>
+                        </div>
+                        
+                        <!-- Tree Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="edit_tree_rali" class="small">Tree Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_tree_rali" name="tree_rali" placeholder="Tree">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-info text-white p-1" id="edit_tree_rali_display" style="min-width: 45px;">0</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">×34: <span id="edit_tree_rali_saved">0</span></small>
+                            </div>
+                        </div>
+                        
+                        <!-- Four Rali Column -->
+                        <div class="col-12 col-sm-6 col-md-2 mb-2">
+                            <div class="form-group mb-0">
+                                <label for="edit_four_rali" class="small">Four Rali</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_four_rali" name="four_rali" placeholder="Four">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-info text-white p-1" id="edit_four_rali_display" style="min-width: 45px;">0</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">×34: <span id="edit_four_rali_saved">0</span></small>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="edit_two_rali">Two Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_two_rali" name="two_rali">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="edit_two_rali_display">0.00</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Saved as: <span id="edit_two_rali_saved">0.00</span> (×34)</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="edit_tree_rali">Tree Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_tree_rali" name="tree_rali">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="edit_tree_rali_display">0.00</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Saved as: <span id="edit_tree_rali_saved">0.00</span> (×34)</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="edit_four_rali">Four Rali (Input Value)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="edit_four_rali" name="four_rali">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white" id="edit_four_rali_display">0.00</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Saved as: <span id="edit_four_rali_saved">0.00</span> (×34)</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <div class="alert alert-success">
-                                <strong>Ilets Calculation:</strong> <span id="edit_ilets_preview">0.00</span> (Sum of all Ralis ÷ 17)
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <div class="alert alert-success py-2 mb-0">
+                                <strong>Ilets:</strong> <span id="edit_ilets_preview">0.00</span> <small class="text-muted">(Sum of Ralis ÷ 17)</small>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-whitesmoke br">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Update Calculation</button>
+                    <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-sm btn-primary" id="editSubmitBtn">Update Calculation</button>
                 </div>
             </form>
         </div>
@@ -380,6 +380,57 @@
         $('#edit_one_rali, #edit_two_rali, #edit_tree_rali, #edit_four_rali').on('input', function() {
             updateLiveCalculations('edit_', '#edit_');
         });
+
+        // Enter key navigation for Add Form
+        $('#stick, #one_rali, #two_rali, #tree_rali, #four_rali').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                e.preventDefault();
+                var currentId = $(this).attr('id');
+                var nextInput = getNextInput(currentId);
+                
+                if (nextInput) {
+                    // If there's a next input, focus on it
+                    $('#' + nextInput).focus();
+                } else {
+                    // If it's the last input (four_rali), submit the form
+                    $('#addFabricForm').submit();
+                }
+            }
+        });
+
+        // Enter key navigation for Edit Form
+        $('#edit_stick, #edit_one_rali, #edit_two_rali, #edit_tree_rali, #edit_four_rali').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                e.preventDefault();
+                var currentId = $(this).attr('id');
+                var nextInput = getNextInput(currentId);
+                
+                if (nextInput) {
+                    // If there's a next input, focus on it
+                    $('#' + nextInput).focus();
+                } else {
+                    // If it's the last input (edit_four_rali), submit the form
+                    $('#editFabricForm').submit();
+                }
+            }
+        });
+
+        // Function to get next input ID
+        function getNextInput(currentId) {
+            var inputOrder = {
+                'stick': 'one_rali',
+                'one_rali': 'two_rali',
+                'two_rali': 'tree_rali',
+                'tree_rali': 'four_rali',
+                'four_rali': null, // Last input - will trigger form submit
+                'edit_stick': 'edit_one_rali',
+                'edit_one_rali': 'edit_two_rali',
+                'edit_two_rali': 'edit_tree_rali',
+                'edit_tree_rali': 'edit_four_rali',
+                'edit_four_rali': null // Last input - will trigger form submit
+            };
+            return inputOrder[currentId];
+        }
 
         function updateLiveCalculations(prefix, selectorPrefix) {
             // Get values
@@ -460,21 +511,21 @@
         // Clear modal forms when modals are hidden
         $('#addFabricModal').on('hidden.bs.modal', function () {
             $('#addFabricForm')[0].reset();
-            $('#addFabricForm button[type="submit"]').prop('disabled', false).html('Add Calculation');
+            $('#addSubmitBtn').prop('disabled', false).html('Add Calculation');
             updateLiveCalculations('', '#');
         });
 
         $('#editFabricModal').on('hidden.bs.modal', function () {
-            $('#editFabricForm button[type="submit"]').prop('disabled', false).html('Update Calculation');
+            $('#editSubmitBtn').prop('disabled', false).html('Update Calculation');
         });
 
         // Handle form submissions
         $('#addFabricForm').on('submit', function() {
-            $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Adding...');
+            $('#addSubmitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Adding...');
         });
 
         $('#editFabricForm').on('submit', function() {
-            $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+            $('#editSubmitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
         });
 
         $('#deleteFabricForm').on('submit', function() {

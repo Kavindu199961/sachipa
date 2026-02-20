@@ -137,7 +137,7 @@
                 </a>
             </li>
 
-            <li class="dropdown {{ request()->is('/cost.calculator*') ? 'active' : '' }}">
+           <li class="dropdown {{ request()->is('cost-calculator*') || request()->routeIs('cost.calculator') ? 'active' : '' }}">
                 <a href="{{ route('cost.calculator') }}" class="nav-link">
                     <i class="fas fa-calculator"></i>
                     <span>Cost Calculator</span>
