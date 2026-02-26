@@ -28,9 +28,9 @@ class InvoiceController extends Controller
         $customers = $query->latest()->paginate(10);
 
         foreach ($customers as $customer) {
-            $customer->total_final_amount   = (float) ($customer->final_amount ?? $customer->invoices->sum('final_amount'));
+            $customer->total_final_amount = (float) ($customer->final_amount ?? 0);
             $customer->total_advance_amount = (float) $customer->advances->sum('advance_amount');
-            $customer->due_amount           = $customer->total_final_amount - $customer->total_advance_amount;
+            $customer->due_amount = $customer->total_final_amount - $customer->total_advance_amount;
         }
 
         return view('user.invoice.index', compact('customers'));
@@ -42,108 +42,132 @@ class InvoiceController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'items'           => 'required|array|min:1',
-            'items.*'         => 'string',
-            'rate'            => 'required|array',
-            'qty'             => 'required|array',
-            'discount'        => 'required|array',
-            'amount'          => 'required|array',
-            'subtotal'        => 'required|numeric|min:0',
-            'total_amount'    => 'required|numeric|min:0',
-            'final_discount'  => 'nullable|numeric|min:0|max:100',
-            'final_amount'    => 'required|numeric|min:0',
-            'advance_amount'  => 'nullable|numeric|min:0',
-            'advance_date'    => 'nullable|date',
-            'customer_name'   => 'nullable|string|max:255',
-            'phone_number'    => 'nullable|string|max:20',
-            'email'           => 'nullable|email|max:255',
-            'location'        => 'nullable|string|max:255',
+{
+    $request->validate([
+        'items' => 'required|array|min:1',
+        'items.*' => 'string',
+        'rate' => 'required|array',
+        'qty' => 'required|array',
+        'item_discount' => 'required|array',
+        'total_amount' => 'required|numeric|min:0',
+        'final_discount' => 'nullable|numeric|min:0|max:100',
+        'final_amount' => 'required|numeric|min:0',
+        'advance_amount' => 'nullable|numeric|min:0',
+        'advance_date' => 'nullable|date',
+        'customer_name' => 'nullable|string|max:255',
+        'phone_number' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255',
+        'location' => 'nullable|string|max:255',
+        'invoice_date' => 'nullable|date', // Added invoice_date validation
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // Get the selected items
+        $selectedItems = $request->items;
+        
+        // Calculate total amount from selected items only
+        $calculatedTotalAmount = 0;
+        $invoiceItems = [];
+
+        foreach ($selectedItems as $itemName) {
+            // Only process if this item is selected and has data
+            if (isset($request->rate[$itemName]) && isset($request->qty[$itemName])) {
+                $rate = (float) ($request->rate[$itemName] ?? 0);
+                $qty = (float) ($request->qty[$itemName] ?? 1);
+                $itemDiscount = (float) ($request->item_discount[$itemName] ?? 0);
+                
+                // Calculate item amount: (rate * qty) - ((rate * qty) * item_discount/100)
+                $subTotal = $rate * $qty;
+                $itemDiscountAmount = $subTotal * ($itemDiscount / 100);
+                $itemAmount = round($subTotal - $itemDiscountAmount, 2);
+                
+                // Add to total
+                $calculatedTotalAmount += $itemAmount;
+                
+                // Store for later use
+                $invoiceItems[] = [
+                    'item_name' => $itemName,
+                    'rate' => $rate,
+                    'qty' => $qty,
+                    'item_discount' => $itemDiscount,
+                    'amount' => $itemAmount,
+                    'final_amount' => $itemAmount,
+                ];
+            }
+        }
+
+        // Use either the calculated total or the user-provided total amount
+        $totalAmount = $request->total_amount > 0 ? (float) $request->total_amount : $calculatedTotalAmount;
+        $finalDiscount = (float) ($request->final_discount ?? 0);
+
+        // Calculate final amount after discount
+        $discountAmount = $totalAmount * ($finalDiscount / 100);
+        $finalAmount = round($totalAmount - $discountAmount, 2);
+
+        // Create customer record
+        $customer = InvoiceCustomer::create([
+            'name' => $request->customer_name,
+            'phone_number' => $request->phone_number,
+            'email' => $request->email,
+            'location' => $request->location,
+            'total_amount' => $totalAmount,
+            'final_discount' => $finalDiscount,
+            'final_amount' => $finalAmount,
         ]);
 
-        try {
-            DB::beginTransaction();
-
-            $totalAmount   = (float) $request->total_amount;
-            $finalDiscount = (float) ($request->final_discount ?? 0);
-
-            // Recalculate on server side to ensure correctness:
-            // final_amount = total_amount - (total_amount * final_discount / 100)
-            $discountAmount = $totalAmount * ($finalDiscount / 100);
-            $finalAmount    = round($totalAmount - $discountAmount, 2);
-
-            // ── 1. Create customer record ─────────────────────────────────────
-            $customer = InvoiceCustomer::create([
-                'name'           => $request->customer_name,
-                'phone_number'   => $request->phone_number,
-                'email'          => $request->email,
-                'location'       => $request->location,
-                'total_amount'   => $totalAmount,
-                'final_discount' => $finalDiscount,
-                'final_amount'   => $finalAmount,
+        // Persist individual invoice lines (only selected items)
+        foreach ($invoiceItems as $itemData) {
+            Invoice::create([
+                'invoice_customer_id' => $customer->id,
+                'item_name' => $itemData['item_name'],
+                'rate' => $itemData['rate'],
+                'qty' => $itemData['qty'],
+                'item_discount' => $itemData['item_discount'],
+                'amount' => $itemData['amount'],
+                'final_amount' => $itemData['final_amount'],
+                'date' => $request->invoice_date ?? now(), // Added invoice date
+                // invoice_number will be auto-generated by the model boot method
             ]);
-
-            // ── 2. Persist individual invoice lines ───────────────────────────
-            foreach ($request->items as $itemName) {
-                $rate     = (float) ($request->rate[$itemName]     ?? 0);
-                $qty      = (float) ($request->qty[$itemName]      ?? 1);
-                $discount = (float) ($request->discount[$itemName] ?? 0);
-                $amount   = (float) ($request->amount[$itemName]   ?? 0);
-
-                Invoice::create([
-                    'invoice_customer_id' => $customer->id,
-                    'item_name'           => $itemName,
-                    'rate'                => $rate,
-                    'qty'                 => $qty,
-                    'discount'            => $discount,
-                    'amount'              => $amount,
-                    'final_amount'        => $amount,
-                ]);
-            }
-
-            // ── 3. Advance payment (optional) ─────────────────────────────────
-            if ($request->filled('advance_amount') && (float) $request->advance_amount > 0) {
-                $firstInvoice = Invoice::where('invoice_customer_id', $customer->id)->first();
-                $dueBalance   = $finalAmount - (float) $request->advance_amount;
-
-                Advanced::create([
-                    'invoice_id'          => $firstInvoice->id ?? null,
-                    'invoice_customer_id' => $customer->id,
-                    'advance_amount'      => $request->advance_amount,
-                    'due_balance'         => $dueBalance >= 0 ? $dueBalance : 0,
-                    'date'                => $request->advance_date ?? now(),
-                ]);
-            }
-
-            // ── 4. Back-link customer → latest invoice ────────────────────────
-            $latestInvoice = Invoice::where('invoice_customer_id', $customer->id)->latest()->first();
-            if ($latestInvoice) {
-                $customer->update(['invoice_id' => $latestInvoice->id]);
-            }
-
-            DB::commit();
-
-            return redirect()->route('invoices.index')
-                ->with('success', 'Invoice created successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Invoice creation failed: ' . $e->getMessage());
-
-            return redirect()->back()
-                ->with('error', 'Failed to create invoice. Please try again.')
-                ->withInput();
         }
+
+        // Advance payment (optional)
+        if ($request->filled('advance_amount') && (float) $request->advance_amount > 0) {
+            $advanceAmount = (float) $request->advance_amount;
+            $dueBalance = $finalAmount - $advanceAmount;
+
+            Advanced::create([
+                'invoice_id' => null,
+                'invoice_customer_id' => $customer->id,
+                'advance_amount' => $advanceAmount,
+                'due_balance' => $dueBalance >= 0 ? $dueBalance : 0,
+                'date' => $request->advance_date ?? now(),
+            ]);
+        }
+
+        DB::commit();
+
+        return redirect()->route('invoices.index')
+            ->with('success', 'Invoice created successfully!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Invoice creation failed: ' . $e->getMessage());
+
+        return redirect()->back()
+            ->with('error', 'Failed to create invoice. Please try again.')
+            ->withInput();
     }
+}
 
     public function show($id)
     {
         $customer = InvoiceCustomer::with(['invoices', 'advances'])->findOrFail($id);
 
-        $customer->total_final_amount   = (float) ($customer->final_amount ?? $customer->invoices->sum('final_amount'));
+        $customer->total_final_amount = (float) ($customer->final_amount ?? 0);
         $customer->total_advance_amount = (float) $customer->advances->sum('advance_amount');
-        $customer->due_amount           = $customer->total_final_amount - $customer->total_advance_amount;
+        $customer->due_amount = $customer->total_final_amount - $customer->total_advance_amount;
 
         return view('user.invoice.show', compact('customer'));
     }
@@ -152,9 +176,9 @@ class InvoiceController extends Controller
     {
         $customer = InvoiceCustomer::with(['invoices', 'advances'])->findOrFail($id);
 
-        $customer->total_final_amount   = (float) ($customer->final_amount ?? $customer->invoices->sum('final_amount'));
+        $customer->total_final_amount = (float) ($customer->final_amount ?? 0);
         $customer->total_advance_amount = (float) $customer->advances->sum('advance_amount');
-        $customer->due_amount           = $customer->total_final_amount - $customer->total_advance_amount;
+        $customer->due_amount = $customer->total_final_amount - $customer->total_advance_amount;
 
         return view('user.invoice.print', compact('customer'));
     }
@@ -163,16 +187,16 @@ class InvoiceController extends Controller
     {
         $request->validate([
             'advance_amount' => 'required|numeric|min:0.01',
-            'date'           => 'required|date',
+            'date' => 'required|date',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $customer = InvoiceCustomer::with('invoices')->findOrFail($id);
+            $customer = InvoiceCustomer::findOrFail($id);
 
-            $totalFinalAmount  = (float) ($customer->final_amount ?? $customer->invoices->sum('final_amount'));
-            $totalAdvancePaid  = (float) Advanced::where('invoice_customer_id', $id)->sum('advance_amount');
+            $totalFinalAmount = (float) $customer->final_amount;
+            $totalAdvancePaid = (float) Advanced::where('invoice_customer_id', $id)->sum('advance_amount');
             $currentDueBalance = $totalFinalAmount - $totalAdvancePaid;
 
             if ((float) $request->advance_amount > $currentDueBalance) {
@@ -183,15 +207,13 @@ class InvoiceController extends Controller
 
             $newDueBalance = $currentDueBalance - (float) $request->advance_amount;
 
-            $advance = Advanced::create([
-                'invoice_id'          => $customer->invoices->first()->id ?? null,
+            Advanced::create([
+                'invoice_id' => null,
                 'invoice_customer_id' => $customer->id,
-                'advance_amount'      => $request->advance_amount,
-                'due_balance'         => $newDueBalance >= 0 ? $newDueBalance : 0,
-                'date'                => $request->date,
+                'advance_amount' => $request->advance_amount,
+                'due_balance' => $newDueBalance >= 0 ? $newDueBalance : 0,
+                'date' => $request->date,
             ]);
-
-            $customer->update(['advanced_id' => $advance->id]);
 
             DB::commit();
 
@@ -237,16 +259,16 @@ class InvoiceController extends Controller
         try {
             $customer = InvoiceCustomer::with('invoices')->findOrFail($id);
 
-            $totalFinalAmount   = (float) ($customer->final_amount ?? $customer->invoices->sum('final_amount'));
+            $totalFinalAmount = (float) ($customer->final_amount ?? 0);
             $totalAdvanceAmount = (float) Advanced::where('invoice_customer_id', $id)->sum('advance_amount');
-            $dueBalance         = $totalFinalAmount - $totalAdvanceAmount;
+            $dueBalance = $totalFinalAmount - $totalAdvanceAmount;
 
             return response()->json([
-                'success'              => true,
-                'customer_name'        => $customer->name,
-                'total_final_amount'   => $totalFinalAmount,
+                'success' => true,
+                'customer_name' => $customer->name,
+                'total_final_amount' => $totalFinalAmount,
                 'total_advance_amount' => $totalAdvanceAmount,
-                'due_balance'          => $dueBalance >= 0 ? $dueBalance : 0,
+                'due_balance' => $dueBalance >= 0 ? $dueBalance : 0,
             ]);
 
         } catch (\Exception $e) {

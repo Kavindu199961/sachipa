@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 26, 2026 at 07:30 AM
+-- Generation Time: Feb 26, 2026 at 11:34 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -29,10 +29,10 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `advances` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `invoice_id` bigint(20) UNSIGNED NOT NULL,
+  `invoice_id` bigint(20) UNSIGNED DEFAULT NULL,
   `invoice_customer_id` bigint(20) UNSIGNED NOT NULL,
-  `advance_amount` decimal(10,2) DEFAULT NULL,
-  `due_balance` decimal(10,2) DEFAULT NULL,
+  `advance_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `due_balance` decimal(10,2) NOT NULL DEFAULT 0.00,
   `date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -43,7 +43,9 @@ CREATE TABLE `advances` (
 --
 
 INSERT INTO `advances` (`id`, `invoice_id`, `invoice_customer_id`, `advance_amount`, `due_balance`, `date`, `created_at`, `updated_at`) VALUES
-(9, 22, 6, 3000.00, 150.00, '2026-02-26', '2026-02-26 00:56:07', '2026-02-26 00:56:07');
+(2, NULL, 2, 7500.00, 40000.00, '2026-02-26', '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(4, NULL, 4, 2000.00, 565.00, '2026-02-26', '2026-02-26 04:07:12', '2026-02-26 04:07:12'),
+(5, NULL, 4, 565.00, 0.00, '2026-02-26', '2026-02-26 04:53:25', '2026-02-26 04:53:25');
 
 -- --------------------------------------------------------
 
@@ -89,8 +91,7 @@ CREATE TABLE `customer` (
 
 INSERT INTO `customer` (`id`, `name`, `phone_number`, `created_at`, `updated_at`) VALUES
 (1, 'Nelundeniya', '0765645303', '2026-02-20 10:04:34', '2026-02-20 10:37:39'),
-(2, 'Kegalle', '0765648325', '2026-02-20 10:37:52', '2026-02-20 10:37:52'),
-(3, 'hhh', '0765648325', '2026-02-25 22:15:01', '2026-02-25 22:15:01');
+(2, 'Kegalle', '0765648325', '2026-02-20 10:37:52', '2026-02-20 10:37:52');
 
 -- --------------------------------------------------------
 
@@ -120,21 +121,17 @@ CREATE TABLE `fabric_cal` (
 INSERT INTO `fabric_cal` (`id`, `customer_id`, `stick`, `one_rali`, `two_rali`, `tree_rali`, `four_rali`, `ilets`, `sum_one_four`, `sum_two_tree`, `created_at`, `updated_at`) VALUES
 (6, 1, 10.5, 238.00, 272.00, 272.00, 238.00, 60.00, 816.00, 884.00, '2026-02-20 10:36:01', '2026-02-20 10:36:27'),
 (7, 1, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 816.00, 884.00, '2026-02-20 10:36:27', '2026-02-20 10:36:27'),
-(10, 2, 10.5, 238.00, 272.00, 272.00, 238.00, 60.00, 4284.00, 2652.00, '2026-02-20 10:47:37', '2026-02-20 12:07:50'),
-(11, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 4284.00, 2652.00, '2026-02-20 10:47:54', '2026-02-20 12:07:50'),
-(12, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 4284.00, 2652.00, '2026-02-20 10:48:04', '2026-02-20 12:07:50'),
-(13, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 4284.00, 2652.00, '2026-02-20 10:48:17', '2026-02-20 12:07:50'),
-(14, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 4284.00, 2652.00, '2026-02-20 10:48:22', '2026-02-20 12:07:50'),
-(15, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 4284.00, 2652.00, '2026-02-20 10:48:51', '2026-02-20 12:07:50'),
-(16, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 4284.00, 2652.00, '2026-02-20 10:48:58', '2026-02-20 12:07:50'),
-(17, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 4284.00, 2652.00, '2026-02-20 10:49:03', '2026-02-20 12:07:50'),
-(18, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 4284.00, 2652.00, '2026-02-20 10:49:12', '2026-02-20 12:07:50'),
-(19, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 4284.00, 2652.00, '2026-02-20 10:49:18', '2026-02-20 12:07:50'),
-(20, 2, 8, 204.00, 204.00, 204.00, 204.00, 48.00, 4284.00, 2652.00, '2026-02-20 10:49:49', '2026-02-20 12:07:50'),
-(22, 2, 3.5, 170.00, 170.00, 170.00, 170.00, 40.00, 4284.00, 2652.00, '2026-02-20 12:03:06', '2026-02-20 12:07:50'),
-(26, 3, 3.5, 170.00, 170.00, 170.00, 170.00, 40.00, 1088.00, 1088.00, '2026-02-25 22:30:48', '2026-02-25 22:30:58'),
-(27, 3, 7.5, 102.00, 102.00, 102.00, 102.00, 24.00, 1088.00, 1088.00, '2026-02-25 22:30:48', '2026-02-25 22:30:58'),
-(28, 3, 5.5, 272.00, 272.00, 272.00, 272.00, 64.00, 1088.00, 1088.00, '2026-02-25 22:30:48', '2026-02-25 22:30:58');
+(10, 2, 10.5, 238.00, 272.00, 272.00, 238.00, 60.00, 3944.00, 2312.00, '2026-02-20 10:47:37', '2026-02-20 10:49:49'),
+(11, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 3944.00, 2312.00, '2026-02-20 10:47:54', '2026-02-20 10:49:49'),
+(12, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 3944.00, 2312.00, '2026-02-20 10:48:04', '2026-02-20 10:49:49'),
+(13, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 3944.00, 2312.00, '2026-02-20 10:48:17', '2026-02-20 10:49:49'),
+(14, 2, 6.5, 170.00, 170.00, 170.00, 170.00, 40.00, 3944.00, 2312.00, '2026-02-20 10:48:22', '2026-02-20 10:49:49'),
+(15, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 3944.00, 2312.00, '2026-02-20 10:48:51', '2026-02-20 10:49:49'),
+(16, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 3944.00, 2312.00, '2026-02-20 10:48:58', '2026-02-20 10:49:49'),
+(17, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 3944.00, 2312.00, '2026-02-20 10:49:03', '2026-02-20 10:49:49'),
+(18, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 3944.00, 2312.00, '2026-02-20 10:49:12', '2026-02-20 10:49:49'),
+(19, 2, 3.5, 340.00, NULL, NULL, NULL, 20.00, 3944.00, 2312.00, '2026-02-20 10:49:18', '2026-02-20 10:49:49'),
+(20, 2, 8, 204.00, 204.00, 204.00, 204.00, 48.00, 3944.00, 2312.00, '2026-02-20 10:49:49', '2026-02-20 10:49:49');
 
 -- --------------------------------------------------------
 
@@ -162,13 +159,11 @@ CREATE TABLE `invoices` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `invoice_customer_id` bigint(20) UNSIGNED NOT NULL,
   `item_name` varchar(255) NOT NULL,
-  `rate` decimal(10,2) NOT NULL,
-  `qty` int(11) NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `item_discount` decimal(10,2) DEFAULT NULL,
-  `final_amount` decimal(10,2) NOT NULL,
-  `final_amount_discount` decimal(10,2) DEFAULT NULL,
-  `total_amount` decimal(12,2) DEFAULT NULL,
+  `rate` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `qty` int(11) NOT NULL DEFAULT 1,
+  `item_discount` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `final_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -177,8 +172,17 @@ CREATE TABLE `invoices` (
 -- Dumping data for table `invoices`
 --
 
-INSERT INTO `invoices` (`id`, `invoice_customer_id`, `item_name`, `rate`, `qty`, `amount`, `item_discount`, `final_amount`, `final_amount_discount`, `total_amount`, `created_at`, `updated_at`) VALUES
-(22, 6, 'STIIP', 350.00, 10, 3500.00, NULL, 3500.00, NULL, NULL, '2026-02-26 00:56:07', '2026-02-26 00:56:07');
+INSERT INTO `invoices` (`id`, `invoice_customer_id`, `item_name`, `rate`, `qty`, `item_discount`, `amount`, `final_amount`, `created_at`, `updated_at`) VALUES
+(10, 2, 'STIIP', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(11, 2, 'ILETS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(12, 2, 'TICKS MATERIAL 1', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(13, 2, 'TICKS MATERIAL 2', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(14, 2, 'POLES', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(15, 2, 'RAILINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(16, 2, 'FITTINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(17, 2, 'TIE BACKS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(18, 2, 'TAILORING', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(20, 4, 'STIIP', 300.00, 10, 5.00, 2850.00, 2850.00, '2026-02-26 04:07:12', '2026-02-26 04:07:12');
 
 -- --------------------------------------------------------
 
@@ -192,18 +196,22 @@ CREATE TABLE `invoice_customers` (
   `phone_number` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
+  `total_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `final_discount` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `final_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `invoice_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `advanced_id` bigint(20) UNSIGNED DEFAULT NULL
+  `advanced_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `invoice_customers`
 --
 
-INSERT INTO `invoice_customers` (`id`, `name`, `phone_number`, `email`, `location`, `created_at`, `updated_at`, `invoice_id`, `advanced_id`) VALUES
-(6, NULL, NULL, NULL, NULL, '2026-02-26 00:56:07', '2026-02-26 00:56:07', 22, NULL);
+INSERT INTO `invoice_customers` (`id`, `name`, `phone_number`, `email`, `location`, `total_amount`, `final_discount`, `final_amount`, `invoice_id`, `advanced_id`, `created_at`, `updated_at`) VALUES
+(2, 'Kavindu Nelshan', '0765645303', 'www.kavi1999maxnelshan@gmail.com', 'matara', 50000.00, 5.00, 47500.00, 10, 2, '2026-02-26 03:53:05', '2026-02-26 03:53:05'),
+(4, 'bathiya pasindu', '0774251774', NULL, 'kegalle', 2850.00, 10.00, 2565.00, 20, 5, '2026-02-26 04:07:12', '2026-02-26 04:53:25');
 
 -- --------------------------------------------------------
 
@@ -263,11 +271,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (4, '2026_02_18_063005_create_my_shop_details_table', 2),
 (5, '2026_02_18_070518_create_stock_table', 3),
 (6, '2026_02_20_150506_create_customer_and_fabric_cal_table', 4),
-(7, '2026_02_26_043116_create_invoice_customers_table', 5),
-(8, '2026_02_26_043207_create_invoices_table', 6),
-(9, '2026_02_26_043347_create_advanceds_table', 7),
-(10, '2026_02_26_043705_add_invoice_advanced_columns_to_invoice_customers_table', 8),
-(11, '2026_02_26_055444_add_total_amount_to_invoices_table', 9);
+(7, '2026_02_26_090805_create_invoice_customers_table', 5),
+(8, '2026_02_26_090831_create_invoices_table', 5),
+(9, '2026_02_26_090905_create_advances_table', 5),
+(10, '2026_02_26_091741_update_invoice_tables', 6);
 
 -- --------------------------------------------------------
 
@@ -330,7 +337,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('gfx1emgXqFUt0WCxTEblXDiEgt3ubFb4mYwx0JEC', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiY29VTGpFMUkyVnFlTEZ4a3BnZVhhSFdjWDlPcU9aN2hLV0xRc284eSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9pbnZvaWNlcyI7czo1OiJyb3V0ZSI7czoxNDoiaW52b2ljZXMuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1772087167);
+('LzH38BHc3Ri2WQLmF6nRW4ELMNqy2IgTOIzSR3yB', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSnhsOWYzQW9EVkxSZ3JhYmhnTzZ1RFhrVUJUdHFjYmtKenVZcGM0OSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9pbnZvaWNlcy80L3ByaW50IjtzOjU6InJvdXRlIjtzOjE0OiJpbnZvaWNlcy5wcmludCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1772102058),
+('uGO9yGt2vrRHlpkKwv95fRVDOOHO4LZuQGfvBCAX', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiM1FwUnRISlZXcUlJSTNkbHlvalVPWnNwZnVGbzE2NE9PMWwxeEN6WSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC91c2VyL2N1c3RvbWVyLzEiO3M6NToicm91dGUiO3M6MTg6InVzZXIuY3VzdG9tZXIuc2hvdyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1771607148);
 
 -- --------------------------------------------------------
 
@@ -546,19 +554,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `advances`
 --
 ALTER TABLE `advances`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `customer`
 --
 ALTER TABLE `customer`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `fabric_cal`
 --
 ALTER TABLE `fabric_cal`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -570,13 +578,13 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `invoice_customers`
 --
 ALTER TABLE `invoice_customers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -588,7 +596,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `my_shop_details`
@@ -623,7 +631,7 @@ ALTER TABLE `users`
 --
 ALTER TABLE `advances`
   ADD CONSTRAINT `advances_invoice_customer_id_foreign` FOREIGN KEY (`invoice_customer_id`) REFERENCES `invoice_customers` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `advances_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `advances_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `fabric_cal`

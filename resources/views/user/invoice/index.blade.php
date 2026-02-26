@@ -5,16 +5,34 @@
 
     {{-- Flash messages --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                showConfirmButton: true,
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'OK',
+                background: '#f8f9fa',
+                iconColor: '#28a745',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        </script>
     @endif
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ session('error') }}',
+                showConfirmButton: true,
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'OK',
+                background: '#f8f9fa',
+                iconColor: '#dc3545'
+            });
+        </script>
     @endif
 
     <div class="card">
@@ -43,6 +61,8 @@
                 <table class="table table-striped" id="invoice-table">
                     <thead class="thead-dark">
                         <tr>
+                            <th>Invoice #</th>
+                            <th>Date</th>
                             <th>Customer Name</th>
                             <th>Email</th>
                             <th>Phone Number</th>
@@ -57,13 +77,17 @@
                     <tbody>
                         @forelse($customers as $customer)
                         @php
-                            $dueAmount   = $customer->due_amount ?? 0;
-                            $statusClass = $dueAmount <= 0
-                                ? 'success'
-                                : ($dueAmount < $customer->total_final_amount / 2 ? 'warning' : 'danger');
-                            $statusText  = $dueAmount <= 0 ? 'Paid' : ($dueAmount < $customer->total_final_amount / 2 ? 'Partial' : 'Due');
+                            $dueAmount = $customer->due_amount ?? 0;
+                            $totalFinalAmount = $customer->total_final_amount ?? 0;
+                            $statusClass = $dueAmount <= 0 
+                                ? 'success' 
+                                : ($dueAmount < $totalFinalAmount / 2 ? 'warning' : 'danger');
+                            $statusText = $dueAmount <= 0 ? 'Paid' : ($dueAmount < $totalFinalAmount / 2 ? 'Partial' : 'Due');
+                            $firstInvoice = $customer->invoices->first();
                         @endphp
-                        <tr class="{{ $dueAmount > 0 ? 'table-' . $statusClass : '' }}">
+                        <tr>
+                            <td><strong>{{ $firstInvoice->invoice_number ?? 'N/A' }}</strong></td>
+                            <td>{{ $firstInvoice ? \Carbon\Carbon::parse($firstInvoice->date)->format('d M Y') : 'N/A' }}</td>
                             <td><strong>{{ $customer->name ?? 'N/A' }}</strong></td>
                             <td>{{ $customer->email ?? '--' }}</td>
                             <td>{{ $customer->phone_number ?? '--' }}</td>
@@ -103,7 +127,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center">No invoices found</td>
+                            <td colspan="11" class="text-center">No invoices found</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -182,22 +206,22 @@
                                             <th>Item Name</th>
                                             <th width="140px">Rate (LKR)</th>
                                             <th width="100px">Qty</th>
-                                            <th width="130px">Discount (%)</th>
+                                            <th width="130px">Item Discount (%)</th>
                                             <th width="140px">Amount (LKR)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @php
                                         $items = [
-                                            'STIIP'          => 'Stiiip Item',
-                                            'ILETS'          => 'Ilets Item',
+                                            'STIIP' => 'Stiiip Item',
+                                            'ILETS' => 'Ilets Item',
                                             'TICKS MATERIAL 1' => 'Ticks Material Type 1',
                                             'TICKS MATERIAL 2' => 'Ticks Material Type 2',
-                                            'POLES'          => 'Poles',
-                                            'RAILINGS'       => 'Railings',
-                                            'FITTINGS'       => 'Fittings',
-                                            'TIE BACKS'      => 'Tie Backs',
-                                            'TAILORING'      => 'Tailoring Service',
+                                            'POLES' => 'Poles',
+                                            'RAILINGS' => 'Railings',
+                                            'FITTINGS' => 'Fittings',
+                                            'TIE BACKS' => 'Tie Backs',
+                                            'TAILORING' => 'Tailoring Service',
                                         ];
                                         @endphp
 
@@ -231,7 +255,7 @@
                                             <td>
                                                 <input type="number" step="0.01" min="0" max="100" value="0"
                                                        class="form-control form-control-sm item-discount"
-                                                       name="discount[{{ $itemValue }}]"
+                                                       name="item_discount[{{ $itemValue }}]"
                                                        placeholder="0" disabled>
                                             </td>
                                             <td>
@@ -244,8 +268,8 @@
                                     </tbody>
                                     <tfoot class="table-secondary">
                                         <tr>
-                                            <td colspan="5" class="text-end fw-bold">Sub Total (items):</td>
-                                            <td class="fw-bold">LKR <span id="subtotal">0.00</span></td>
+                                            <td colspan="5" class="text-end fw-bold">Items Sub Total:</td>
+                                            <td class="fw-bold">LKR <span id="items_subtotal">0.00</span></td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -260,33 +284,28 @@
                         </div>
                         <div class="card-body">
                             <div class="row g-3">
-                                {{-- Sub Total (read-only mirror of item sum) --}}
+                                {{-- Invoice Date --}}
                                 <div class="col-md-4">
-                                    <label class="form-label">Items Sub Total</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">LKR</span>
-                                        <input type="number" step="0.01" class="form-control bg-light"
-                                               id="subtotal_amount" readonly value="0">
-                                        {{-- submitted: items sub total --}}
-                                        <input type="hidden" name="subtotal" id="subtotal_hidden" value="0">
-                                    </div>
+                                    <label class="form-label">Invoice Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control"
+                                           id="invoice_date" name="invoice_date"
+                                           value="{{ date('Y-m-d') }}" required>
                                 </div>
 
-                                {{-- Total Amount — editable override, or auto from items --}}
+                                {{-- Total Amount (Auto-calculated from items or manually overridden) --}}
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold">
                                         Total Amount
-                                        <small class="text-muted fw-normal">(override or auto)</small>
+                                        <small class="text-muted fw-normal">(Auto from items or override)</small>
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">LKR</span>
                                         <input type="number" step="0.01" min="0" value="0"
                                                class="form-control" id="total_amount_input"
-                                               placeholder="Auto-filled from items">
-                                        {{-- SUBMITTED to controller --}}
-                                        <input type="hidden" name="total_amount" id="total_amount_hidden" value="0">
+                                               name="total_amount"
+                                               placeholder="Auto from items">
                                     </div>
-                                    <small class="text-muted">Leave 0 to use items sub total</small>
+                                    <small class="text-muted">Leave 0 to use items total</small>
                                 </div>
 
                                 {{-- Final Discount % --}}
@@ -311,9 +330,6 @@
                                                class="form-control fw-bold bg-light"
                                                id="final_amount" name="final_amount" value="0">
                                     </div>
-                                    <small class="text-info">
-                                        = Total Amount − (Total Amount × Discount% / 100)
-                                    </small>
                                 </div>
 
                                 {{-- Advance Amount (optional) --}}
@@ -337,9 +353,8 @@
                                         <span class="input-group-text">LKR</span>
                                         <input type="number" step="0.01" readonly
                                                class="form-control bg-light"
-                                               id="due_balance" name="due_balance" value="">
+                                               id="due_balance" value="0">
                                     </div>
-                                    <small class="text-muted">= Final Amount − Advance</small>
                                 </div>
 
                                 {{-- Advance Date --}}
@@ -359,11 +374,15 @@
                                         <div class="fs-5" id="sum-count">0</div>
                                     </div>
                                     <div class="col">
-                                        <div class="fw-bold">Total Amount</div>
-                                        <div class="fs-5">LKR <span id="sum-subtotal">0.00</span></div>
+                                        <div class="fw-bold">Items Total</div>
+                                        <div class="fs-5">LKR <span id="sum-items-total">0.00</span></div>
                                     </div>
                                     <div class="col">
-                                        <div class="fw-bold">Discount</div>
+                                        <div class="fw-bold">Total Amount</div>
+                                        <div class="fs-5">LKR <span id="sum-total">0.00</span></div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="fw-bold">Final Discount</div>
                                         <div class="fs-5"><span id="sum-discount">0</span>%</div>
                                     </div>
                                     <div class="col">
@@ -372,7 +391,7 @@
                                     </div>
                                     <div class="col">
                                         <div class="fw-bold">Due Balance</div>
-                                        <div class="fs-5 text-danger">LKR <span id="sum-due">—</span></div>
+                                        <div class="fs-5 text-danger">LKR <span id="sum-due">0.00</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -411,15 +430,15 @@
                     <table class="table table-sm table-borderless mb-3">
                         <tr>
                             <th>Final Amount:</th>
-                            <td class="text-end fw-bold" id="display_final_amount">$0.00</td>
+                            <td class="text-end fw-bold" id="display_final_amount">LKR 0.00</td>
                         </tr>
                         <tr>
                             <th>Total Advance Paid:</th>
-                            <td class="text-end" id="display_paid_amount">$0.00</td>
+                            <td class="text-end" id="display_paid_amount">LKR 0.00</td>
                         </tr>
                         <tr class="table-warning">
                             <th>Current Due Balance:</th>
-                            <td class="text-end fw-bold" id="display_due_balance">$0.00</td>
+                            <td class="text-end fw-bold" id="display_due_balance">LKR 0.00</td>
                         </tr>
                     </table>
 
@@ -429,12 +448,11 @@
                             <small class="text-muted">(max: LKR <span id="max-advance-amount">0.00</span>)</small>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text">$</span>
+                            <span class="input-group-text">LKR</span>
                             <input type="number" step="0.01" min="0.01" required
                                    class="form-control" id="advance_amount_modal" name="advance_amount"
                                    placeholder="Enter amount">
                         </div>
-                        {{-- "Pay Full Amount" quick-fill --}}
                         <button type="button" class="btn btn-sm btn-outline-warning mt-1" id="payFullBtn">
                             <i class="fas fa-check-double"></i> Pay Full Due Amount
                         </button>
@@ -504,10 +522,13 @@
     #createInvoiceModal .modal-dialog { height: calc(100% - 3.5rem); }
     #createInvoiceModal .modal-content { height: 100%; display: flex; flex-direction: column; }
     #createInvoiceModal .modal-body { flex: 1 1 auto; overflow-y: auto !important; min-height: 0; }
+    .is-invalid { border-color: #dc3545; }
+    .is-invalid:focus { box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); }
 </style>
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -515,109 +536,113 @@ document.addEventListener('DOMContentLoaded', function () {
     //  CREATE INVOICE — calculation engine
     // ══════════════════════════════════════════
 
-    const itemCheckboxes      = document.querySelectorAll('.item-checkbox');
-    const selectAllBtn        = document.getElementById('selectAllItemsBtn');
-    const deselectAllBtn      = document.getElementById('deselectAllItemsBtn');
-    const subtotalSpan        = document.getElementById('subtotal');
-    const subtotalAmountInput = document.getElementById('subtotal_amount');
-    const subtotalHidden      = document.getElementById('subtotal_hidden');
-    const totalAmountInput    = document.getElementById('total_amount_input');   // visible editable
-    const totalAmountHidden   = document.getElementById('total_amount_hidden');  // submitted to controller
-    const finalDiscountInput  = document.getElementById('final_discount');
-    const finalAmountInput    = document.getElementById('final_amount');
-    const advanceAmountInput  = document.getElementById('advance_amount');
-    const dueBalanceInput     = document.getElementById('due_balance');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const selectAllBtn = document.getElementById('selectAllItemsBtn');
+    const deselectAllBtn = document.getElementById('deselectAllItemsBtn');
+    const itemsSubtotalSpan = document.getElementById('items_subtotal');
+    const totalAmountInput = document.getElementById('total_amount_input');
+    const finalDiscountInput = document.getElementById('final_discount');
+    const finalAmountInput = document.getElementById('final_amount');
+    const advanceAmountInput = document.getElementById('advance_amount');
+    const dueBalanceInput = document.getElementById('due_balance');
 
-    // summary bar
-    const sumCount    = document.getElementById('sum-count');
-    const sumSubtotal = document.getElementById('sum-subtotal');
+    // summary bar elements
+    const sumCount = document.getElementById('sum-count');
+    const sumItemsTotal = document.getElementById('sum-items-total');
+    const sumTotal = document.getElementById('sum-total');
     const sumDiscount = document.getElementById('sum-discount');
-    const sumFinal    = document.getElementById('sum-final');
-    const sumDue      = document.getElementById('sum-due');
+    const sumFinal = document.getElementById('sum-final');
+    const sumDue = document.getElementById('sum-due');
 
-    /** Enable/disable a row's inputs when its checkbox toggled */
+    /** Calculate a single row amount = (rate * qty) - ((rate * qty) * item_discount/100) */
+    function calcRowAmount(row) {
+        const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+        const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+        const disc = parseFloat(row.querySelector('.item-discount').value) || 0;
+        
+        const subTotal = rate * qty;
+        const discountAmount = subTotal * (disc / 100);
+        const amount = subTotal - discountAmount;
+        
+        row.querySelector('.item-amount').value = amount.toFixed(2);
+        return amount;
+    }
+
+    /** Calculate items subtotal from selected rows */
+    function calculateItemsSubtotal() {
+        let itemsTotal = 0;
+        let selectedCount = 0;
+
+        itemCheckboxes.forEach(cb => {
+            if (cb.checked) {
+                itemsTotal += calcRowAmount(cb.closest('tr'));
+                selectedCount++;
+            }
+        });
+
+        itemsSubtotalSpan.textContent = itemsTotal.toFixed(2);
+        return { itemsTotal, selectedCount };
+    }
+
+    /** Master recalculation */
+    function calculateAll() {
+        // Calculate items subtotal
+        const { itemsTotal, selectedCount } = calculateItemsSubtotal();
+
+        // Get total amount (either manual override or items total)
+        const manualTotal = parseFloat(totalAmountInput.value) || 0;
+        const totalAmount = manualTotal > 0 ? manualTotal : itemsTotal;
+
+        // Calculate final amount after discount
+        const finalDiscount = parseFloat(finalDiscountInput.value) || 0;
+        const discountAmount = totalAmount * (finalDiscount / 100);
+        const finalAmount = totalAmount - discountAmount;
+
+        // Update final amount field
+        finalAmountInput.value = finalAmount.toFixed(2);
+
+        // Calculate due balance if advance is entered
+        const advanceRaw = advanceAmountInput.value.trim();
+        const advance = advanceRaw !== '' ? (parseFloat(advanceRaw) || 0) : 0;
+        const dueBalance = finalAmount - advance;
+        dueBalanceInput.value = (dueBalance >= 0 ? dueBalance : 0).toFixed(2);
+
+        // Update summary bar
+        sumCount.textContent = selectedCount;
+        sumItemsTotal.textContent = itemsTotal.toFixed(2);
+        sumTotal.textContent = totalAmount.toFixed(2);
+        sumDiscount.textContent = finalDiscount;
+        sumFinal.textContent = finalAmount.toFixed(2);
+        sumDue.textContent = (dueBalance >= 0 ? dueBalance : 0).toFixed(2);
+
+        // Validate advance amount
+        if (advanceRaw !== '' && advance > finalAmount) {
+            advanceAmountInput.classList.add('is-invalid');
+        } else {
+            advanceAmountInput.classList.remove('is-invalid');
+        }
+    }
+
+    /** Enable/disable row inputs based on checkbox */
     function toggleRow(checkbox) {
-        const row      = checkbox.closest('tr');
-        const rate     = row.querySelector('.item-rate');
-        const qty      = row.querySelector('.item-qty');
+        const row = checkbox.closest('tr');
+        const rate = row.querySelector('.item-rate');
+        const qty = row.querySelector('.item-qty');
         const discount = row.querySelector('.item-discount');
-        const isOn     = checkbox.checked;
+        const isChecked = checkbox.checked;
 
-        [rate, qty, discount].forEach(el => el.disabled = !isOn);
-        row.classList.toggle('row-selected', isOn);
+        [rate, qty, discount].forEach(el => el.disabled = !isChecked);
+        row.classList.toggle('row-selected', isChecked);
 
-        if (!isOn) {
-            rate.value     = '0';
-            qty.value      = '1';
+        if (!isChecked) {
+            rate.value = '0';
+            qty.value = '1';
             discount.value = '0';
             calcRowAmount(row);
         }
     }
 
-    /** Calculate a single row amount = rate * qty * (1 - item_discount/100) */
-    function calcRowAmount(row) {
-        const rate  = parseFloat(row.querySelector('.item-rate').value)     || 0;
-        const qty   = parseFloat(row.querySelector('.item-qty').value)      || 1;
-        const disc  = parseFloat(row.querySelector('.item-discount').value) || 0;
-        const amt   = rate * qty * (1 - disc / 100);
-        row.querySelector('.item-amount').value = amt.toFixed(2);
-        return amt;
-    }
-
-    /** Master recalculation — called on every input change */
-    function calculateAll() {
-        // Step 1: Sum all selected item amounts
-        let itemsSubTotal = 0;
-        let selectedCount = 0;
-
-        itemCheckboxes.forEach(cb => {
-            if (cb.checked) {
-                itemsSubTotal += calcRowAmount(cb.closest('tr'));
-                selectedCount++;
-            }
-        });
-
-        // Update items sub-total display
-        subtotalSpan.textContent  = itemsSubTotal.toFixed(2);
-        subtotalAmountInput.value = itemsSubTotal.toFixed(2);
-        subtotalHidden.value      = itemsSubTotal.toFixed(2);
-
-        // Step 2: Total Amount = override if user typed > 0, else items sub total
-        const overrideVal = parseFloat(totalAmountInput.value) || 0;
-        const totalAmount = overrideVal > 0 ? overrideVal : itemsSubTotal;
-
-        // Sync the hidden input that gets submitted
-        totalAmountHidden.value = totalAmount.toFixed(2);
-
-        // Step 3: Final Amount = Total Amount - (Total Amount × Discount% / 100)
-        const disc          = parseFloat(finalDiscountInput.value) || 0;
-        const discountAmt   = totalAmount * (disc / 100);
-        const finalAmount   = totalAmount - discountAmt;
-
-        finalAmountInput.value = finalAmount.toFixed(2);
-
-        // Step 4: Due Balance = Final Amount - Advance (only if advance is entered)
-        const advRaw   = advanceAmountInput.value.trim();
-        const advance  = advRaw !== '' ? (parseFloat(advRaw) || 0) : null;
-
-        if (advance !== null) {
-            const due = finalAmount - advance;
-            dueBalanceInput.value = (due >= 0 ? due : 0).toFixed(2);
-        } else {
-            dueBalanceInput.value = '';
-        }
-
-        // Step 5: Update summary bar
-        sumCount.textContent    = selectedCount;
-        sumSubtotal.textContent = totalAmount.toFixed(2);
-        sumDiscount.textContent = disc;
-        sumFinal.textContent    = finalAmount.toFixed(2);
-        sumDue.textContent      = advance !== null
-            ? (Math.max(0, finalAmount - advance)).toFixed(2)
-            : '—';
-    }
-
-    // ── Wire up all events ──
+    // ── Event Listeners ──
     itemCheckboxes.forEach(cb => {
         cb.addEventListener('change', function () {
             toggleRow(this);
@@ -625,6 +650,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Input events for rate, qty, discount
     document.querySelectorAll('.item-rate, .item-qty, .item-discount').forEach(input => {
         input.addEventListener('input', function () {
             if (this.closest('tr').querySelector('.item-checkbox').checked) {
@@ -633,52 +659,79 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    totalAmountInput?.addEventListener('input', calculateAll);
-    finalDiscountInput?.addEventListener('input', calculateAll);
-
-    advanceAmountInput?.addEventListener('input', function () {
-        calculateAll();
-        const finalAmt = parseFloat(finalAmountInput.value) || 0;
-        const adv      = parseFloat(this.value) || 0;
-        this.classList.toggle('is-invalid', adv > finalAmt);
-    });
-
-    selectAllBtn?.addEventListener('click', function () {
-        itemCheckboxes.forEach(cb => { cb.checked = true; toggleRow(cb); });
+    totalAmountInput.addEventListener('input', calculateAll);
+    finalDiscountInput.addEventListener('input', calculateAll);
+    
+    advanceAmountInput.addEventListener('input', function () {
         calculateAll();
     });
 
-    deselectAllBtn?.addEventListener('click', function () {
-        itemCheckboxes.forEach(cb => { cb.checked = false; toggleRow(cb); });
+    // Select/Deselect All buttons
+    selectAllBtn.addEventListener('click', function () {
+        itemCheckboxes.forEach(cb => {
+            cb.checked = true;
+            toggleRow(cb);
+        });
         calculateAll();
     });
 
-    // ── Form submit validation ──
-    document.getElementById('createInvoiceForm')?.addEventListener('submit', function (e) {
-        const checked  = Array.from(itemCheckboxes).filter(cb => cb.checked);
-        const finalAmt = parseFloat(finalAmountInput.value) || 0;
-        const advRaw   = advanceAmountInput.value.trim();
-        const advAmt   = advRaw !== '' ? (parseFloat(advRaw) || 0) : 0;
-
-        if (checked.length === 0) {
-            e.preventDefault();
-            return alert('Please select at least one item.');
-        }
-        if (finalAmt <= 0) {
-            e.preventDefault();
-            return alert('Final amount must be greater than zero. Enter rates for the selected items.');
-        }
-        if (advRaw !== '' && advAmt > finalAmt) {
-            e.preventDefault();
-            return alert('Advance amount cannot exceed the final amount of LKR ' + finalAmt.toFixed(2));
-        }
-        if (!confirm('Create this invoice?')) {
-            e.preventDefault();
-        }
+    deselectAllBtn.addEventListener('click', function () {
+        itemCheckboxes.forEach(cb => {
+            cb.checked = false;
+            toggleRow(cb);
+        });
+        calculateAll();
     });
 
-    // ── Initialise: disable all rows ──
-    itemCheckboxes.forEach(cb => toggleRow(cb));
+    // Form submit validation - REMOVED ALERT AND CONFIRM
+    document.getElementById('createInvoiceForm').addEventListener('submit', function (e) {
+        const checkedItems = Array.from(itemCheckboxes).filter(cb => cb.checked);
+        const finalAmount = parseFloat(finalAmountInput.value) || 0;
+        const advanceRaw = advanceAmountInput.value.trim();
+        const advance = advanceRaw !== '' ? (parseFloat(advanceRaw) || 0) : 0;
+
+        if (checkedItems.length === 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Please select at least one item.',
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        if (finalAmount <= 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Final amount must be greater than zero. Please enter rates for selected items.',
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        if (advanceRaw !== '' && advance > finalAmount) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Advance amount cannot exceed the final amount of LKR ' + finalAmount.toFixed(2),
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // No confirm dialog - submit directly
+        return true;
+    });
+
+    // Initial calculation
+    calculateAll();
 
     // ══════════════════════════════════════════
     //  ADD ADVANCE MODAL
@@ -687,28 +740,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.add-advance-btn').forEach(btn => {
         btn.addEventListener('click', function () {
-            const customerId   = this.dataset.id;
+            const customerId = this.dataset.id;
             const customerName = this.dataset.name;
-            const finalAmt     = parseFloat(this.dataset.final);
-            const advPaid      = parseFloat(this.dataset.advance);
-            const due          = parseFloat(this.dataset.due);
+            const finalAmt = parseFloat(this.dataset.final);
+            const advPaid = parseFloat(this.dataset.advance);
+            const due = parseFloat(this.dataset.due);
 
             currentDueBalance = due;
 
-            document.getElementById('advance-customer-name').textContent   = customerName || '(No name)';
-            document.getElementById('display_final_amount').textContent    = 'LKR ' + finalAmt.toFixed(2);
-            document.getElementById('display_paid_amount').textContent     = 'LKR ' + advPaid.toFixed(2);
-            document.getElementById('display_due_balance').textContent     = 'LKR ' + due.toFixed(2);
-            document.getElementById('max-advance-amount').textContent      = due.toFixed(2);
+            document.getElementById('advance-customer-name').textContent = customerName || '(No name)';
+            document.getElementById('display_final_amount').textContent = 'LKR ' + finalAmt.toFixed(2);
+            document.getElementById('display_paid_amount').textContent = 'LKR ' + advPaid.toFixed(2);
+            document.getElementById('display_due_balance').textContent = 'LKR ' + due.toFixed(2);
+            document.getElementById('max-advance-amount').textContent = due.toFixed(2);
 
             document.getElementById('advanceForm').action = `/invoices/${customerId}/add-advance`;
 
             const amtInput = document.getElementById('advance_amount_modal');
             amtInput.value = '';
-            amtInput.max   = due;
+            amtInput.max = due;
 
             const errDiv = document.getElementById('advance-error');
-            const okDiv  = document.getElementById('advance-ok');
+            const okDiv = document.getElementById('advance-ok');
             errDiv.classList.add('d-none');
             okDiv.classList.add('d-none');
 
@@ -729,35 +782,38 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('payFullBtn')?.addEventListener('click', function () {
         const amtInput = document.getElementById('advance_amount_modal');
         amtInput.value = currentDueBalance.toFixed(2);
-        amtInput.dispatchEvent(new Event('input'));
+        validateAdvanceInput();
     });
 
     // Validate modal advance input live
-    document.getElementById('advance_amount_modal')?.addEventListener('input', function () {
-        const val    = parseFloat(this.value) || 0;
+    function validateAdvanceInput() {
+        const amtInput = document.getElementById('advance_amount_modal');
+        const val = parseFloat(amtInput.value) || 0;
         const errDiv = document.getElementById('advance-error');
-        const okDiv  = document.getElementById('advance-ok');
-        const btn    = document.getElementById('submitAdvanceBtn');
+        const okDiv = document.getElementById('advance-ok');
+        const btn = document.getElementById('submitAdvanceBtn');
 
         if (val > currentDueBalance) {
-            this.classList.add('is-invalid');
+            amtInput.classList.add('is-invalid');
             errDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Amount cannot exceed due balance of LKR ${currentDueBalance.toFixed(2)}`;
             errDiv.classList.remove('d-none');
             okDiv.classList.add('d-none');
             btn.disabled = true;
         } else if (val <= 0) {
-            this.classList.remove('is-invalid');
+            amtInput.classList.remove('is-invalid');
             errDiv.classList.add('d-none');
             okDiv.classList.add('d-none');
             btn.disabled = false;
         } else {
-            this.classList.remove('is-invalid');
+            amtInput.classList.remove('is-invalid');
             errDiv.classList.add('d-none');
             okDiv.innerHTML = `<i class="fas fa-check-circle"></i> Amount valid. Remaining balance after payment: LKR ${(currentDueBalance - val).toFixed(2)}`;
             okDiv.classList.remove('d-none');
             btn.disabled = false;
         }
-    });
+    }
+
+    document.getElementById('advance_amount_modal')?.addEventListener('input', validateAdvanceInput);
 
     // ══════════════════════════════════════════
     //  DELETE MODAL
@@ -767,6 +823,20 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('delete-customer-name').textContent = this.dataset.name || 'this customer';
             document.getElementById('deleteForm').action = `/invoices/${this.dataset.id}`;
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        });
+    });
+
+    // Fix modal close button issue
+    const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
         });
     });
 });
