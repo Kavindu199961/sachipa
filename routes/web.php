@@ -6,6 +6,10 @@ use App\Http\Controllers\MyShopController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\TodayItemController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InvoiceController;
+
+
+
 
 // Guest routes (only accessible when not logged in)
 Route::middleware('guest')->group(function () {
@@ -93,6 +97,20 @@ Route::prefix('user')->name('user.')->middleware(['auth'])->group(function () {
     Route::put('customer/{customer}/fabric/{fabric}', [CustomerController::class, 'fabricUpdate'])->name('customer.fabric.update');
     Route::delete('customer/{customer}/fabric/{fabric}', [CustomerController::class, 'fabricDestroy'])->name('customer.fabric.destroy');
     Route::post('user/customer/{customer}/fabric/store-multiple', [CustomerController::class, 'storeMultiple'])->name('customer.fabric.storeMultiple');
+});
+
+Route::middleware(['auth'])->group(function () {
+    // Invoice routes
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::get('/invoices/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::get('/invoices/{id}/print', [InvoiceController::class, 'print'])->name('invoices.print');
+    Route::post('/invoices/{id}/add-advance', [InvoiceController::class, 'addAdvance'])->name('invoices.add-advance');
+    Route::delete('/invoices/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+    
+    // AJAX route for getting customer details
+    Route::get('/invoices/customer/{id}/details', [InvoiceController::class, 'getCustomerDetails'])->name('invoices.customer.details');
 });
 
 // Home redirect
