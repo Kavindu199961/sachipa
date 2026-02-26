@@ -25,7 +25,7 @@
                 <a href="{{ route('user.customer.index') }}" class="btn btn-success">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
-                <button type="button" class="btn btn-primary" id="addFabricBtn">
+                <button type="button" class="btn btn-primary" id="addFabricBtn" data-toggle="modal" data-target="#addFabricModal">
                     <i class="fas fa-plus"></i> Add Fabric Calculation
                 </button>
             </div>
@@ -144,88 +144,132 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="addFabricForm" method="POST" action="{{ route('user.customer.fabric.store', $customer->id) }}">
+            <form id="addFabricForm" method="POST" action="{{ route('user.customer.fabric.storeMultiple', $customer->id) }}">
                 @csrf
                 <div class="modal-body">
-                    <!-- Mobile/Desktop Responsive Row -->
-                    <div class="form-row">
-                        <!-- Stick Column -->
-                        <div class="col-12 col-sm-6 col-md-2 mb-2">
-                            <div class="form-group mb-0">
-                                <label for="stick" class="small">Stick</label>
-                                <input type="number" step="0.01" min="0" class="form-control form-control-sm" id="stick" name="stick" placeholder="Stick" autofocus>
-                                <small class="text-muted">As entered</small>
-                            </div>
-                        </div>
-                        
-                        <!-- One Rali Column -->
-                        <div class="col-12 col-sm-6 col-md-2 mb-2">
-                            <div class="form-group mb-0">
-                                <label for="one_rali" class="small">One Rali</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="one_rali" name="one_rali" placeholder="One">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white p-1" id="one_rali_display" style="min-width: 45px;">0</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">×34: <span id="one_rali_saved">0</span></small>
-                            </div>
-                        </div>
-                        
-                        <!-- Two Rali Column -->
-                        <div class="col-12 col-sm-6 col-md-2 mb-2">
-                            <div class="form-group mb-0">
-                                <label for="two_rali" class="small">Two Rali</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="two_rali" name="two_rali" placeholder="Two">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white p-1" id="two_rali_display" style="min-width: 45px;">0</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">×34: <span id="two_rali_saved">0</span></small>
-                            </div>
-                        </div>
-                        
-                        <!-- Tree Rali Column -->
-                        <div class="col-12 col-sm-6 col-md-2 mb-2">
-                            <div class="form-group mb-0">
-                                <label for="tree_rali" class="small">Tree Rali</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="tree_rali" name="tree_rali" placeholder="Tree">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white p-1" id="tree_rali_display" style="min-width: 45px;">0</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">×34: <span id="tree_rali_saved">0</span></small>
-                            </div>
-                        </div>
-                        
-                        <!-- Four Rali Column -->
-                        <div class="col-12 col-sm-6 col-md-2 mb-2">
-                            <div class="form-group mb-0">
-                                <label for="four_rali" class="small">Four Rali</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="four_rali" name="four_rali" placeholder="Four">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-info text-white p-1" id="four_rali_display" style="min-width: 45px;">0</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">×34: <span id="four_rali_saved">0</span></small>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-success btn-sm" id="addNewRow">
+                            <i class="fas fa-plus"></i> Add New Row
+                        </button>
+                        <small class="text-muted ml-2">Click to add multiple fabric calculations</small>
                     </div>
                     
-                    <div class="row mt-2">
-                        <div class="col-12">
-                            <div class="alert alert-success py-2 mb-0">
-                                <strong>Ilets:</strong> <span id="ilets_preview">0.00</span> <small class="text-muted">(Sum of Ralis ÷ 17)</small>
+                    <div id="fabric-rows-container">
+                        <!-- First Row (Template) -->
+                        <div class="fabric-row border rounded p-3 mb-3" data-row-index="0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Row #1</h6>
+                                <button type="button" class="btn btn-danger btn-sm remove-row" style="display: none;">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
+                            <div class="form-row">
+                                <!-- Stick Column -->
+                                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                                    <div class="form-group mb-0">
+                                        <label class="small">Stick</label>
+                                        <input type="number" step="0.01" min="0"
+                                               class="form-control form-control-sm stick-input"
+                                               name="rows[0][stick]"
+                                               placeholder="Stick"
+                                               data-field="stick"
+                                               data-row="0"
+                                               autofocus>
+                                        <small class="text-muted">As entered</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- One Rali Column -->
+                                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                                    <div class="form-group mb-0">
+                                        <label class="small">One Rali</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.01" min="0"
+                                                   class="form-control form-control-sm rali-input"
+                                                   name="rows[0][one_rali]"
+                                                   placeholder="One"
+                                                   data-field="one_rali"
+                                                   data-row="0">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="one_rali" style="min-width: 45px;">0</span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">×34: <span class="rali-saved" data-saved="one_rali">0</span></small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Two Rali Column -->
+                                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                                    <div class="form-group mb-0">
+                                        <label class="small">Two Rali</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.01" min="0"
+                                                   class="form-control form-control-sm rali-input"
+                                                   name="rows[0][two_rali]"
+                                                   placeholder="Two"
+                                                   data-field="two_rali"
+                                                   data-row="0">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="two_rali" style="min-width: 45px;">0</span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">×34: <span class="rali-saved" data-saved="two_rali">0</span></small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Tree Rali Column -->
+                                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                                    <div class="form-group mb-0">
+                                        <label class="small">Tree Rali</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.01" min="0"
+                                                   class="form-control form-control-sm rali-input"
+                                                   name="rows[0][tree_rali]"
+                                                   placeholder="Tree"
+                                                   data-field="tree_rali"
+                                                   data-row="0">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="tree_rali" style="min-width: 45px;">0</span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">×34: <span class="rali-saved" data-saved="tree_rali">0</span></small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Four Rali Column -->
+                                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                                    <div class="form-group mb-0">
+                                        <label class="small">Four Rali</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.01" min="0"
+                                                   class="form-control form-control-sm rali-input"
+                                                   name="rows[0][four_rali]"
+                                                   placeholder="Four"
+                                                   data-field="four_rali"
+                                                   data-row="0">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="four_rali" style="min-width: 45px;">0</span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">×34: <span class="rali-saved" data-saved="four_rali">0</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="alert alert-success py-2 mb-0">
+                                        <strong>Ilets:</strong> <span class="ilets-preview">0.00</span>
+                                        <small class="text-muted">(Sum of Ralis ÷ 17)</small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-whitesmoke br">
-                    <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-sm btn-primary" id="addSubmitBtn">Add Calculation</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="addSubmitBtn">Add Calculations</button>
                 </div>
             </form>
         </div>
@@ -246,7 +290,6 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
-                    <!-- Mobile/Desktop Responsive Row -->
                     <div class="form-row">
                         <!-- Stick Column -->
                         <div class="col-12 col-sm-6 col-md-2 mb-2">
@@ -322,9 +365,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-whitesmoke br">
-                    <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-sm btn-primary" id="editSubmitBtn">Update Calculation</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="editSubmitBtn">Update Calculation</button>
                 </div>
             </form>
         </div>
@@ -344,7 +387,7 @@
             <div class="modal-body">
                 <p>Are you sure you want to delete this fabric calculation? This action cannot be undone.</p>
             </div>
-            <div class="modal-footer bg-whitesmoke br">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <form id="deleteFabricForm" method="POST" style="display: inline;">
                     @csrf
@@ -356,191 +399,314 @@
     </div>
 </div>
 
+@endsection
+
 @push('scripts')
 <script>
-    $(document).ready(function () {
-        // CSRF token for AJAX requests
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
+$(document).ready(function () {
 
-        // Handle Add Fabric button click
-        $('#addFabricBtn').on('click', function() {
-            $('#addFabricModal').modal('show');
-        });
+    // CSRF token for AJAX requests
+    $.ajaxSetup({
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+    });
 
-        // Live calculation for Add Form
-        $('#one_rali, #two_rali, #tree_rali, #four_rali').on('input', function() {
-            updateLiveCalculations('', '#');
-        });
+    // ─── Field order for Enter-key navigation ───────────────────────────────
+    var fieldOrder = ['stick', 'one_rali', 'two_rali', 'tree_rali', 'four_rali'];
 
-        // Live calculation for Edit Form
-        $('#edit_one_rali, #edit_two_rali, #edit_tree_rali, #edit_four_rali').on('input', function() {
-            updateLiveCalculations('edit_', '#edit_');
-        });
+    // ─── Build a fresh row HTML using a row index ────────────────────────────
+    function buildRowHtml(idx) {
+        return `
+        <div class="fabric-row border rounded p-3 mb-3" data-row-index="${idx}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Row #${idx + 1}</h6>
+                <button type="button" class="btn btn-danger btn-sm remove-row">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+            <div class="form-row">
 
-        // Enter key navigation for Add Form
-        $('#stick, #one_rali, #two_rali, #tree_rali, #four_rali').on('keypress', function(e) {
-            if (e.which === 13) { // Enter key
-                e.preventDefault();
-                var currentId = $(this).attr('id');
-                var nextInput = getNextInput(currentId);
-                
-                if (nextInput) {
-                    // If there's a next input, focus on it
-                    $('#' + nextInput).focus();
-                } else {
-                    // If it's the last input (four_rali), submit the form
-                    $('#addFabricForm').submit();
-                }
-            }
-        });
+                <!-- Stick -->
+                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                    <div class="form-group mb-0">
+                        <label class="small">Stick</label>
+                        <input type="number" step="0.01" min="0"
+                               class="form-control form-control-sm stick-input"
+                               name="rows[${idx}][stick]"
+                               placeholder="Stick"
+                               data-field="stick"
+                               data-row="${idx}">
+                        <small class="text-muted">As entered</small>
+                    </div>
+                </div>
 
-        // Enter key navigation for Edit Form
-        $('#edit_stick, #edit_one_rali, #edit_two_rali, #edit_tree_rali, #edit_four_rali').on('keypress', function(e) {
-            if (e.which === 13) { // Enter key
-                e.preventDefault();
-                var currentId = $(this).attr('id');
-                var nextInput = getNextInput(currentId);
-                
-                if (nextInput) {
-                    // If there's a next input, focus on it
-                    $('#' + nextInput).focus();
-                } else {
-                    // If it's the last input (edit_four_rali), submit the form
-                    $('#editFabricForm').submit();
-                }
-            }
-        });
+                <!-- One Rali -->
+                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                    <div class="form-group mb-0">
+                        <label class="small">One Rali</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="0.01" min="0"
+                                   class="form-control form-control-sm rali-input"
+                                   name="rows[${idx}][one_rali]"
+                                   placeholder="One"
+                                   data-field="one_rali"
+                                   data-row="${idx}">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="one_rali" style="min-width:45px;">0</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">×34: <span class="rali-saved" data-saved="one_rali">0</span></small>
+                    </div>
+                </div>
 
-        // Function to get next input ID
-        function getNextInput(currentId) {
-            var inputOrder = {
-                'stick': 'one_rali',
-                'one_rali': 'two_rali',
-                'two_rali': 'tree_rali',
-                'tree_rali': 'four_rali',
-                'four_rali': null, // Last input - will trigger form submit
-                'edit_stick': 'edit_one_rali',
-                'edit_one_rali': 'edit_two_rali',
-                'edit_two_rali': 'edit_tree_rali',
-                'edit_tree_rali': 'edit_four_rali',
-                'edit_four_rali': null // Last input - will trigger form submit
-            };
-            return inputOrder[currentId];
-        }
+                <!-- Two Rali -->
+                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                    <div class="form-group mb-0">
+                        <label class="small">Two Rali</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="0.01" min="0"
+                                   class="form-control form-control-sm rali-input"
+                                   name="rows[${idx}][two_rali]"
+                                   placeholder="Two"
+                                   data-field="two_rali"
+                                   data-row="${idx}">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="two_rali" style="min-width:45px;">0</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">×34: <span class="rali-saved" data-saved="two_rali">0</span></small>
+                    </div>
+                </div>
 
-        function updateLiveCalculations(prefix, selectorPrefix) {
-            // Get values
-            var oneRali = parseFloat($(selectorPrefix + 'one_rali').val()) || 0;
-            var twoRali = parseFloat($(selectorPrefix + 'two_rali').val()) || 0;
-            var treeRali = parseFloat($(selectorPrefix + 'tree_rali').val()) || 0;
-            var fourRali = parseFloat($(selectorPrefix + 'four_rali').val()) || 0;
-            
-            // Calculate saved values (multiply by 34)
-            var oneRaliSaved = oneRali * 34;
-            var twoRaliSaved = twoRali * 34;
-            var treeRaliSaved = treeRali * 34;
-            var fourRaliSaved = fourRali * 34;
-            
-            // Update display fields
-            $(selectorPrefix + 'one_rali_display').text(oneRaliSaved.toFixed(2));
-            $(selectorPrefix + 'two_rali_display').text(twoRaliSaved.toFixed(2));
-            $(selectorPrefix + 'tree_rali_display').text(treeRaliSaved.toFixed(2));
-            $(selectorPrefix + 'four_rali_display').text(fourRaliSaved.toFixed(2));
-            
-            $(selectorPrefix + 'one_rali_saved').text(oneRaliSaved.toFixed(2));
-            $(selectorPrefix + 'two_rali_saved').text(twoRaliSaved.toFixed(2));
-            $(selectorPrefix + 'tree_rali_saved').text(treeRaliSaved.toFixed(2));
-            $(selectorPrefix + 'four_rali_saved').text(fourRaliSaved.toFixed(2));
-            
-            // Calculate ilets
-            var totalRali = oneRaliSaved + twoRaliSaved + treeRaliSaved + fourRaliSaved;
-            var ilets = totalRali > 0 ? totalRali / 17 : 0;
-            $(selectorPrefix + 'ilets_preview').text(ilets.toFixed(2));
-        }
+                <!-- Tree Rali -->
+                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                    <div class="form-group mb-0">
+                        <label class="small">Tree Rali</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="0.01" min="0"
+                                   class="form-control form-control-sm rali-input"
+                                   name="rows[${idx}][tree_rali]"
+                                   placeholder="Tree"
+                                   data-field="tree_rali"
+                                   data-row="${idx}">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="tree_rali" style="min-width:45px;">0</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">×34: <span class="rali-saved" data-saved="tree_rali">0</span></small>
+                    </div>
+                </div>
 
-        // Handle Edit button click
-        $(document).on('click', '.edit-fabric', function() {
-            var fabricId = $(this).data('id');
-            var customerId = '{{ $customer->id }}';
-            
-            // Fetch fabric data via AJAX
-            $.get("{{ url('user/customer') }}/" + customerId + "/fabric/" + fabricId + "/edit", function(data) {
-                // Populate the edit form with display values
-                $('#edit_stick').val(data.display_stick || '');
-                $('#edit_one_rali').val(data.display_one_rali || '');
-                $('#edit_two_rali').val(data.display_two_rali || '');
-                $('#edit_tree_rali').val(data.display_tree_rali || '');
-                $('#edit_four_rali').val(data.display_four_rali || '');
-                
-                // Update live calculations
-                updateLiveCalculations('edit_', '#edit_');
-                
-                // Set the form action URL
-                var actionUrl = "{{ url('user/customer') }}/" + customerId + "/fabric/" + fabricId;
-                $('#editFabricForm').attr('action', actionUrl);
-                
-                // Show the modal
-                $('#editFabricModal').modal('show');
-            }).fail(function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to load fabric calculation data',
-                    confirmButtonColor: '#0d6efd'
-                });
+                <!-- Four Rali -->
+                <div class="col-12 col-sm-6 col-md-2 mb-2">
+                    <div class="form-group mb-0">
+                        <label class="small">Four Rali</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="0.01" min="0"
+                                   class="form-control form-control-sm rali-input"
+                                   name="rows[${idx}][four_rali]"
+                                   placeholder="Four"
+                                   data-field="four_rali"
+                                   data-row="${idx}">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-info text-white p-1 rali-display" data-display="four_rali" style="min-width:45px;">0</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">×34: <span class="rali-saved" data-saved="four_rali">0</span></small>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row mt-2">
+                <div class="col-12">
+                    <div class="alert alert-success py-2 mb-0">
+                        <strong>Ilets:</strong> <span class="ilets-preview">0.00</span>
+                        <small class="text-muted">(Sum of Ralis ÷ 17)</small>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // ─── Add New Row button ──────────────────────────────────────────────────
+    $('#addNewRow').on('click', function () {
+        var newIdx = $('#fabric-rows-container .fabric-row').length;
+        $('#fabric-rows-container').append(buildRowHtml(newIdx));
+        // Focus first input of newly added row
+        $('#fabric-rows-container .fabric-row:last .stick-input').focus();
+    });
+
+    // ─── Remove Row ──────────────────────────────────────────────────────────
+    $(document).on('click', '.remove-row', function () {
+        $(this).closest('.fabric-row').remove();
+        reindexRows();
+    });
+
+    // ─── Reindex all rows after removal ─────────────────────────────────────
+    function reindexRows() {
+        $('#fabric-rows-container .fabric-row').each(function (i) {
+            var $row = $(this);
+            $row.attr('data-row-index', i);
+            $row.find('h6').text('Row #' + (i + 1));
+
+            // Update name + data-row for every input
+            $row.find('input[data-field]').each(function () {
+                var field = $(this).attr('data-field');
+                $(this).attr('name', 'rows[' + i + '][' + field + ']')
+                       .attr('data-row', i);
             });
         });
+    }
 
-        // Handle Delete button click
-        $(document).on('click', '.delete-fabric', function() {
-            var fabricId = $(this).data('id');
-            var customerId = '{{ $customer->id }}';
-            
-            // Set the form action URL
-            var actionUrl = "{{ url('user/customer') }}/" + customerId + "/fabric/" + fabricId;
-            $('#deleteFabricForm').attr('action', actionUrl);
-            
-            // Show the modal
-            $('#deleteFabricModal').modal('show');
+    // ─── Live calculations for Add modal ─────────────────────────────────────
+    $(document).on('input', '#fabric-rows-container .rali-input', function () {
+        updateRowCalculations($(this).closest('.fabric-row'));
+    });
+
+    function updateRowCalculations($row) {
+        var fields   = ['one_rali', 'two_rali', 'tree_rali', 'four_rali'];
+        var total    = 0;
+
+        fields.forEach(function (field) {
+            var val    = parseFloat($row.find('input[data-field="' + field + '"]').val()) || 0;
+            var saved  = val * 34;
+            total     += saved;
+            $row.find('.rali-display[data-display="'  + field + '"]').text(saved.toFixed(2));
+            $row.find('.rali-saved[data-saved="'      + field + '"]').text(saved.toFixed(2));
         });
 
-        // Clear modal forms when modals are hidden
-        $('#addFabricModal').on('hidden.bs.modal', function () {
-            $('#addFabricForm')[0].reset();
-            $('#addSubmitBtn').prop('disabled', false).html('Add Calculation');
-            updateLiveCalculations('', '#');
-        });
+        var ilets = total > 0 ? total / 17 : 0;
+        $row.find('.ilets-preview').text(ilets.toFixed(2));
+    }
 
-        $('#editFabricModal').on('hidden.bs.modal', function () {
-            $('#editSubmitBtn').prop('disabled', false).html('Update Calculation');
-        });
+    // ─── Enter-key navigation inside Add modal rows ──────────────────────────
+    // Navigates: stick → one_rali → two_rali → tree_rali → four_rali
+    // On four_rali Enter: adds a new row and focuses its stick input
+    $(document).on('keydown', '#fabric-rows-container input[data-field]', function (e) {
+        if (e.which !== 13) return; // Only Enter key
+        e.preventDefault();
 
-        // Handle form submissions
-        $('#addFabricForm').on('submit', function() {
-            $('#addSubmitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Adding...');
-        });
+        var $input    = $(this);
+        var field     = $input.attr('data-field');
+        var $row      = $input.closest('.fabric-row');
+        var fieldIdx  = fieldOrder.indexOf(field);
 
-        $('#editFabricForm').on('submit', function() {
-            $('#editSubmitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
-        });
+        if (fieldIdx < fieldOrder.length - 1) {
+            // Move to next field in the same row
+            var nextField = fieldOrder[fieldIdx + 1];
+            $row.find('input[data-field="' + nextField + '"]').focus();
+        } else {
+            // Last field (four_rali) — add a new row and go to its stick
+            var newIdx = $('#fabric-rows-container .fabric-row').length;
+            $('#fabric-rows-container').append(buildRowHtml(newIdx));
+            $('#fabric-rows-container .fabric-row:last .stick-input').focus();
+        }
+    });
 
-        $('#deleteFabricForm').on('submit', function() {
-            $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Deleting...');
-        });
+    // ─── Handle Edit button click ────────────────────────────────────────────
+    $(document).on('click', '.edit-fabric', function () {
+        var fabricId   = $(this).data('id');
+        var customerId = '{{ $customer->id }}';
 
-        // Auto-focus on first input when modal opens
-        $('#addFabricModal').on('shown.bs.modal', function () {
-            $('#stick').focus();
-        });
-        
-        $('#editFabricModal').on('shown.bs.modal', function () {
-            $('#edit_stick').focus();
+        $.get("{{ url('user/customer') }}/" + customerId + "/fabric/" + fabricId + "/edit", function (data) {
+            $('#edit_stick').val(data.display_stick || '');
+            $('#edit_one_rali').val(data.display_one_rali || '');
+            $('#edit_two_rali').val(data.display_two_rali || '');
+            $('#edit_tree_rali').val(data.display_tree_rali || '');
+            $('#edit_four_rali').val(data.display_four_rali || '');
+
+            updateEditCalculations();
+
+            $('#editFabricForm').attr('action', "{{ url('user/customer') }}/" + customerId + "/fabric/" + fabricId);
+            $('#editFabricModal').modal('show');
+        }).fail(function () {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load fabric calculation data', confirmButtonColor: '#0d6efd' });
         });
     });
+
+    // Enter-key navigation for Edit modal
+    $('#editFabricModal').on('keydown', 'input', function (e) {
+        if (e.which !== 13) return;
+        e.preventDefault();
+        var editOrder = ['edit_stick', 'edit_one_rali', 'edit_two_rali', 'edit_tree_rali', 'edit_four_rali'];
+        var currentId = $(this).attr('id');
+        var idx       = editOrder.indexOf(currentId);
+        if (idx >= 0 && idx < editOrder.length - 1) {
+            $('#' + editOrder[idx + 1]).focus();
+        }
+    });
+
+    function updateEditCalculations() {
+        var fields = ['one_rali', 'two_rali', 'tree_rali', 'four_rali'];
+        var total  = 0;
+        fields.forEach(function (field) {
+            var val   = parseFloat($('#edit_' + field).val()) || 0;
+            var saved = val * 34;
+            total    += saved;
+            $('#edit_' + field + '_display').text(saved.toFixed(2));
+            $('#edit_' + field + '_saved').text(saved.toFixed(2));
+        });
+        var ilets = total > 0 ? total / 17 : 0;
+        $('#edit_ilets_preview').text(ilets.toFixed(2));
+    }
+
+    $('#edit_one_rali, #edit_two_rali, #edit_tree_rali, #edit_four_rali').on('input', function () {
+        updateEditCalculations();
+    });
+
+    // ─── Handle Delete button click ──────────────────────────────────────────
+    $(document).on('click', '.delete-fabric', function () {
+        var fabricId   = $(this).data('id');
+        var customerId = '{{ $customer->id }}';
+        $('#deleteFabricForm').attr('action', "{{ url('user/customer') }}/" + customerId + "/fabric/" + fabricId);
+        $('#deleteFabricModal').modal('show');
+    });
+
+    // ─── Helper: force-clean Bootstrap modal leftovers ───────────────────────
+    function cleanupModal() {
+        // Remove any lingering backdrops
+        $('.modal-backdrop').remove();
+        // Remove classes Bootstrap adds to <body>
+        $('body').removeClass('modal-open').css('padding-right', '');
+        // Ensure all modals are truly hidden
+        $('.modal').removeClass('show').hide().removeAttr('aria-modal').attr('aria-hidden', 'true');
+    }
+
+    // ─── Reset Add modal on close ────────────────────────────────────────────
+    $('#addFabricModal').on('hidden.bs.modal', function () {
+        $('#fabric-rows-container').html(buildRowHtml(0));
+        $('#fabric-rows-container .remove-row').hide();
+        $('#addSubmitBtn').prop('disabled', false).html('Add Calculations');
+        cleanupModal();
+    });
+
+    $('#editFabricModal').on('hidden.bs.modal', function () {
+        $('#editSubmitBtn').prop('disabled', false).html('Update Calculation');
+        cleanupModal();
+    });
+
+    $('#deleteFabricModal').on('hidden.bs.modal', function () {
+        cleanupModal();
+    });
+
+    // ─── Disable submit buttons on submission ────────────────────────────────
+    $('#addFabricForm').on('submit', function () {
+        $('#addSubmitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Adding...');
+    });
+    $('#editFabricForm').on('submit', function () {
+        $('#editSubmitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+    });
+    $('#deleteFabricForm').on('submit', function () {
+        $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Deleting...');
+    });
+
+    // ─── Auto-focus on modal open ────────────────────────────────────────────
+    $('#addFabricModal').on('shown.bs.modal', function () {
+        $('#fabric-rows-container .fabric-row:first .stick-input').focus();
+    });
+    $('#editFabricModal').on('shown.bs.modal', function () {
+        $('#edit_stick').focus();
+    });
+
+});
 </script>
 @endpush
-@endsection

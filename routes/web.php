@@ -92,6 +92,7 @@ Route::prefix('user')->name('user.')->middleware(['auth'])->group(function () {
     Route::get('customer/{customer}/fabric/{fabric}/edit', [CustomerController::class, 'fabricEdit'])->name('customer.fabric.edit');
     Route::put('customer/{customer}/fabric/{fabric}', [CustomerController::class, 'fabricUpdate'])->name('customer.fabric.update');
     Route::delete('customer/{customer}/fabric/{fabric}', [CustomerController::class, 'fabricDestroy'])->name('customer.fabric.destroy');
+    Route::post('user/customer/{customer}/fabric/store-multiple', [CustomerController::class, 'storeMultiple'])->name('customer.fabric.storeMultiple');
 });
 
 // Home redirect

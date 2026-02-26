@@ -301,4 +301,63 @@ class CustomerController extends Controller
             'sum_two_tree' => $totalTwoTree,
         ]);
     }
+
+    public function storeMultiple(Request $request, $customerId)
+{
+    $request->validate([
+        'rows' => 'required|array',
+        'rows.*.stick' => 'nullable|numeric|min:0',
+        'rows.*.one_rali' => 'nullable|numeric|min:0',
+        'rows.*.two_rali' => 'nullable|numeric|min:0',
+        'rows.*.tree_rali' => 'nullable|numeric|min:0',
+        'rows.*.four_rali' => 'nullable|numeric|min:0',
+    ]);
+
+    $customer = Customer::findOrFail($customerId);
+    $savedCount = 0;
+
+    foreach ($request->rows as $row) {
+        // Skip empty rows
+        if (empty($row['stick']) && empty($row['one_rali']) && empty($row['two_rali']) && 
+            empty($row['tree_rali']) && empty($row['four_rali'])) {
+            continue;
+        }
+
+        // Calculate the saved values (multiply by 34)
+        $oneRaliSaved = isset($row['one_rali']) ? floatval($row['one_rali']) * 34 : 0;
+        $twoRaliSaved = isset($row['two_rali']) ? floatval($row['two_rali']) * 34 : 0;
+        $treeRaliSaved = isset($row['tree_rali']) ? floatval($row['tree_rali']) * 34 : 0;
+        $fourRaliSaved = isset($row['four_rali']) ? floatval($row['four_rali']) * 34 : 0;
+
+        // Calculate ilets
+        $totalRali = $oneRaliSaved + $twoRaliSaved + $treeRaliSaved + $fourRaliSaved;
+        $ilets = $totalRali > 0 ? $totalRali / 17 : 0;
+
+        // Calculate sums
+        $sumOneFour = $oneRaliSaved + $fourRaliSaved;
+        $sumTwoTree = $twoRaliSaved + $treeRaliSaved;
+
+        // Create fabric calculation
+        $customer->fabricCalculations()->create([
+            'stick' => $row['stick'] ?? 0,
+            'one_rali' => $oneRaliSaved,
+            'two_rali' => $twoRaliSaved,
+            'tree_rali' => $treeRaliSaved,
+            'four_rali' => $fourRaliSaved,
+            'ilets' => $ilets,
+            'sum_one_four' => $sumOneFour,
+            'sum_two_tree' => $sumTwoTree,
+        ]);
+
+        $savedCount++;
+    }
+
+    if ($savedCount > 0) {
+        return redirect()->route('user.customer.show', $customerId)
+            ->with('success', $savedCount . ' fabric calculation(s) added successfully!');
+    } else {
+        return redirect()->route('user.customer.show', $customerId)
+            ->with('error', 'No fabric calculations were added.');
+    }
+}
 }
