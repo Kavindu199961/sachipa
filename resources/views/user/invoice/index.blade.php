@@ -79,8 +79,8 @@
                         @php
                             $dueAmount = $customer->due_amount ?? 0;
                             $totalFinalAmount = $customer->total_final_amount ?? 0;
-                            $statusClass = $dueAmount <= 0 
-                                ? 'success' 
+                            $statusClass = $dueAmount <= 0
+                                ? 'success'
                                 : ($dueAmount < $totalFinalAmount / 2 ? 'warning' : 'danger');
                             $statusText = $dueAmount <= 0 ? 'Paid' : ($dueAmount < $totalFinalAmount / 2 ? 'Partial' : 'Due');
                             $firstInvoice = $customer->invoices->first();
@@ -292,7 +292,7 @@
                                            value="{{ date('Y-m-d') }}" required>
                                 </div>
 
-                                {{-- Total Amount (Auto-calculated from items or manually overridden) --}}
+                                {{-- Total Amount --}}
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold">
                                         Total Amount
@@ -319,7 +319,7 @@
                                     <small class="text-muted">Applied to Total Amount</small>
                                 </div>
 
-                                {{-- Final Amount = Total Amount − (Total Amount × Discount%) --}}
+                                {{-- Final Amount --}}
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold text-success">
                                         Final Amount <span class="text-danger">*</span>
@@ -332,7 +332,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Advance Amount (optional) --}}
+                                {{-- Advance Amount --}}
                                 <div class="col-md-4">
                                     <label class="form-label">
                                         Advance Amount
@@ -422,7 +422,7 @@
                 @csrf
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title"><i class="fas fa-money-bill-wave"></i> Add Advance Payment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <h5 class="text-center mb-3" id="advance-customer-name"></h5>
@@ -469,7 +469,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Close
+                        <i class="fas fa-times"></i> Cancel
                     </button>
                     <button type="submit" class="btn btn-warning" id="submitAdvanceBtn">
                         <i class="fas fa-check"></i> Add Advance
@@ -488,7 +488,7 @@
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Delete invoice for <strong id="delete-customer-name"></strong>?</p>
@@ -533,6 +533,19 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // ══════════════════════════════════════════
+    //  MODAL INSTANCES — store once, reuse always
+    //  This is the KEY fix: using Bootstrap's
+    //  getOrCreateInstance() ensures the same
+    //  instance is used for both show() and
+    //  data-bs-dismiss, so close buttons work.
+    // ══════════════════════════════════════════
+    const addAdvanceModalEl = document.getElementById('addAdvanceModal');
+    const deleteModalEl     = document.getElementById('deleteModal');
+
+    const addAdvanceModal = bootstrap.Modal.getOrCreateInstance(addAdvanceModalEl);
+    const deleteModal     = bootstrap.Modal.getOrCreateInstance(deleteModalEl);
+
+    // ══════════════════════════════════════════
     //  CREATE INVOICE — calculation engine
     // ══════════════════════════════════════════
 
@@ -559,11 +572,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
         const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
         const disc = parseFloat(row.querySelector('.item-discount').value) || 0;
-        
         const subTotal = rate * qty;
         const discountAmount = subTotal * (disc / 100);
         const amount = subTotal - discountAmount;
-        
         row.querySelector('.item-amount').value = amount.toFixed(2);
         return amount;
     }
@@ -572,50 +583,35 @@ document.addEventListener('DOMContentLoaded', function () {
     function calculateItemsSubtotal() {
         let itemsTotal = 0;
         let selectedCount = 0;
-
         itemCheckboxes.forEach(cb => {
             if (cb.checked) {
                 itemsTotal += calcRowAmount(cb.closest('tr'));
                 selectedCount++;
             }
         });
-
         itemsSubtotalSpan.textContent = itemsTotal.toFixed(2);
         return { itemsTotal, selectedCount };
     }
 
     /** Master recalculation */
     function calculateAll() {
-        // Calculate items subtotal
         const { itemsTotal, selectedCount } = calculateItemsSubtotal();
-
-        // Get total amount (either manual override or items total)
         const manualTotal = parseFloat(totalAmountInput.value) || 0;
         const totalAmount = manualTotal > 0 ? manualTotal : itemsTotal;
-
-        // Calculate final amount after discount
         const finalDiscount = parseFloat(finalDiscountInput.value) || 0;
         const discountAmount = totalAmount * (finalDiscount / 100);
         const finalAmount = totalAmount - discountAmount;
-
-        // Update final amount field
         finalAmountInput.value = finalAmount.toFixed(2);
-
-        // Calculate due balance if advance is entered
         const advanceRaw = advanceAmountInput.value.trim();
         const advance = advanceRaw !== '' ? (parseFloat(advanceRaw) || 0) : 0;
         const dueBalance = finalAmount - advance;
         dueBalanceInput.value = (dueBalance >= 0 ? dueBalance : 0).toFixed(2);
-
-        // Update summary bar
         sumCount.textContent = selectedCount;
         sumItemsTotal.textContent = itemsTotal.toFixed(2);
         sumTotal.textContent = totalAmount.toFixed(2);
         sumDiscount.textContent = finalDiscount;
         sumFinal.textContent = finalAmount.toFixed(2);
         sumDue.textContent = (dueBalance >= 0 ? dueBalance : 0).toFixed(2);
-
-        // Validate advance amount
         if (advanceRaw !== '' && advance > finalAmount) {
             advanceAmountInput.classList.add('is-invalid');
         } else {
@@ -630,10 +626,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const qty = row.querySelector('.item-qty');
         const discount = row.querySelector('.item-discount');
         const isChecked = checkbox.checked;
-
         [rate, qty, discount].forEach(el => el.disabled = !isChecked);
         row.classList.toggle('row-selected', isChecked);
-
         if (!isChecked) {
             rate.value = '0';
             qty.value = '1';
@@ -650,7 +644,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Input events for rate, qty, discount
     document.querySelectorAll('.item-rate, .item-qty, .item-discount').forEach(input => {
         input.addEventListener('input', function () {
             if (this.closest('tr').querySelector('.item-checkbox').checked) {
@@ -661,29 +654,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     totalAmountInput.addEventListener('input', calculateAll);
     finalDiscountInput.addEventListener('input', calculateAll);
-    
-    advanceAmountInput.addEventListener('input', function () {
-        calculateAll();
-    });
+    advanceAmountInput.addEventListener('input', calculateAll);
 
-    // Select/Deselect All buttons
     selectAllBtn.addEventListener('click', function () {
-        itemCheckboxes.forEach(cb => {
-            cb.checked = true;
-            toggleRow(cb);
-        });
+        itemCheckboxes.forEach(cb => { cb.checked = true; toggleRow(cb); });
         calculateAll();
     });
 
     deselectAllBtn.addEventListener('click', function () {
-        itemCheckboxes.forEach(cb => {
-            cb.checked = false;
-            toggleRow(cb);
-        });
+        itemCheckboxes.forEach(cb => { cb.checked = false; toggleRow(cb); });
         calculateAll();
     });
 
-    // Form submit validation - REMOVED ALERT AND CONFIRM
     document.getElementById('createInvoiceForm').addEventListener('submit', function (e) {
         const checkedItems = Array.from(itemCheckboxes).filter(cb => cb.checked);
         const finalAmount = parseFloat(finalAmountInput.value) || 0;
@@ -692,45 +674,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (checkedItems.length === 0) {
             e.preventDefault();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Warning!',
-                text: 'Please select at least one item.',
-                confirmButtonColor: '#0d6efd',
-                confirmButtonText: 'OK'
-            });
+            Swal.fire({ icon: 'warning', title: 'Warning!', text: 'Please select at least one item.', confirmButtonColor: '#0d6efd', confirmButtonText: 'OK' });
             return;
         }
-
         if (finalAmount <= 0) {
             e.preventDefault();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Warning!',
-                text: 'Final amount must be greater than zero. Please enter rates for selected items.',
-                confirmButtonColor: '#0d6efd',
-                confirmButtonText: 'OK'
-            });
+            Swal.fire({ icon: 'warning', title: 'Warning!', text: 'Final amount must be greater than zero. Please enter rates for selected items.', confirmButtonColor: '#0d6efd', confirmButtonText: 'OK' });
             return;
         }
-
         if (advanceRaw !== '' && advance > finalAmount) {
             e.preventDefault();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Warning!',
-                text: 'Advance amount cannot exceed the final amount of LKR ' + finalAmount.toFixed(2),
-                confirmButtonColor: '#0d6efd',
-                confirmButtonText: 'OK'
-            });
+            Swal.fire({ icon: 'warning', title: 'Warning!', text: 'Advance amount cannot exceed the final amount of LKR ' + finalAmount.toFixed(2), confirmButtonColor: '#0d6efd', confirmButtonText: 'OK' });
             return;
         }
-
-        // No confirm dialog - submit directly
         return true;
     });
 
-    // Initial calculation
     calculateAll();
 
     // ══════════════════════════════════════════
@@ -774,18 +733,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitBtn.disabled = false;
             }
 
-            new bootstrap.Modal(document.getElementById('addAdvanceModal')).show();
+            // ✅ FIX: use stored instance instead of creating a new one
+            addAdvanceModal.show();
         });
     });
 
-    // Pay full amount quick-fill
     document.getElementById('payFullBtn')?.addEventListener('click', function () {
         const amtInput = document.getElementById('advance_amount_modal');
         amtInput.value = currentDueBalance.toFixed(2);
         validateAdvanceInput();
     });
 
-    // Validate modal advance input live
     function validateAdvanceInput() {
         const amtInput = document.getElementById('advance_amount_modal');
         const val = parseFloat(amtInput.value) || 0;
@@ -822,23 +780,12 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             document.getElementById('delete-customer-name').textContent = this.dataset.name || 'this customer';
             document.getElementById('deleteForm').action = `/invoices/${this.dataset.id}`;
-            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+
+            // ✅ FIX: use stored instance instead of creating a new one
+            deleteModal.show();
         });
     });
 
-    // Fix modal close button issue
-    const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
-    closeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            if (modal) {
-                const modalInstance = bootstrap.Modal.getInstance(modal);
-                if (modalInstance) {
-                    modalInstance.hide();
-                }
-            }
-        });
-    });
 });
 </script>
 @endpush

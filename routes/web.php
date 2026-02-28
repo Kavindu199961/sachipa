@@ -9,8 +9,6 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
 
 
-
-
 // Guest routes (only accessible when not logged in)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -21,13 +19,8 @@ Route::middleware('guest')->group(function () {
 
 // Authenticated routes (require login)
 Route::middleware('auth')->group(function () {
-    // Dashboard routes
-    Route::get('/dashboard', function () {
-        return view('dashboard.index');
-    })->name('dashboard');
-    
-    // Alternative with controller
-    // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard routes - USE THIS VERSION (uncommented)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
