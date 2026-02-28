@@ -7,6 +7,7 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\TodayItemController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoiceReportController;
 
 
 // Guest routes (only accessible when not logged in)
@@ -104,6 +105,16 @@ Route::middleware(['auth'])->group(function () {
     
     // AJAX route for getting customer details
     Route::get('/invoices/customer/{id}/details', [InvoiceController::class, 'getCustomerDetails'])->name('invoices.customer.details');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('reports')->name('reports.')->group(function () {
+        // Invoice Report Routes
+        Route::get('/invoices', [InvoiceReportController::class, 'index'])->name('invoices.index');
+        Route::get('/invoices/pdf', [InvoiceReportController::class, 'generatePdf'])->name('invoices.pdf');
+        Route::get('/invoices/csv', [InvoiceReportController::class, 'generateCsv'])->name('invoices.csv');
+        Route::get('/invoices/excel', [InvoiceReportController::class, 'exportExcel'])->name('invoices.excel');
+    });
 });
 
 // Home redirect

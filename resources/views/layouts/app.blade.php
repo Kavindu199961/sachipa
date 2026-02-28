@@ -150,6 +150,12 @@
               </a>
             </li>
 
+           <li class="dropdown {{ request()->is('reports/invoices*') ? 'active' : '' }}">
+    <a href="{{ route('reports.invoices.index') }}" class="nav-link">
+        <i class="fas fa-chart-bar"></i>
+        <span>Invoice Report</span>
+    </a>
+</li>
             <li class="dropdown">
               <a href="{{ route('logout') }}" class="nav-link mt-5"
                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

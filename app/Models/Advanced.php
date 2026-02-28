@@ -11,120 +11,132 @@ class Advanced extends Model
 
     /**
      * The table associated with the model.
-     *
-     * @var string
      */
     protected $table = 'advances';
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
         'invoice_id',
         'invoice_customer_id',
         'advance_amount',
         'due_balance',
-        'date'
+        'date',
     ];
 
     /**
      * The attributes that should be cast.
-     *
-     * @var array<string, string>
      */
     protected $casts = [
         'advance_amount' => 'decimal:2',
-        'due_balance' => 'decimal:2',
-        'date' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'due_balance'    => 'decimal:2',
+        'date'           => 'date',
+        'created_at'     => 'datetime',
+        'updated_at'     => 'datetime',
     ];
 
-    /**
-     * The attributes that should be mutated to dates.
-     *
-     * @var array
-     */
     protected $dates = [
         'date',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
-    /**
-     * Get the invoice that this advance payment belongs to.
-     */
+    // ─── Relationships ────────────────────────────────────────────────────────
+
     public function invoice()
     {
         return $this->belongsTo(Invoice::class, 'invoice_id');
     }
 
-    /**
-     * Get the customer that this advance payment belongs to.
-     */
     public function customer()
     {
         return $this->belongsTo(InvoiceCustomer::class, 'invoice_customer_id');
     }
 
-    /**
-     * Get the formatted advance amount.
-     */
+    // ─── Accessors ────────────────────────────────────────────────────────────
+
     public function getFormattedAdvanceAmountAttribute()
     {
         return 'LKR ' . number_format($this->advance_amount, 2);
     }
 
-    /**
-     * Get the formatted due balance.
-     */
     public function getFormattedDueBalanceAttribute()
     {
         return 'LKR ' . number_format($this->due_balance, 2);
     }
 
-    /**
-     * Get the formatted date.
-     */
     public function getFormattedDateAttribute()
     {
         return $this->date->format('d M Y');
     }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
 
     /**
      * Check if this is the latest advance for the customer.
      */
     public function isLatestForCustomer()
     {
-        $latestAdvance = Advanced::where('invoice_customer_id', $this->invoice_customer_id)
+        $latest = Advanced::where('invoice_customer_id', $this->invoice_customer_id)
             ->latest()
             ->first();
-            
-        return $latestAdvance && $latestAdvance->id === $this->id;
+
+        return $latest && $latest->id === $this->id;
     }
 
     /**
-     * Boot the model.
+     * Calculate and set due_balance automatically from the linked invoice.
+     * due_balance = invoice.final_amount - total advances paid so far (including this one)
      */
+    protected static function calculateDueBalance(Advanced $advance): void
+    {
+        if (! $advance->invoice_id) {
+            return;
+        }
+
+        $invoice = Invoice::find($advance->invoice_id);
+
+        if (! $invoice) {
+            return;
+        }
+
+        // Sum all previously saved advances for this invoice (excluding current record on update)
+        $previousTotal = Advanced::where('invoice_id', $advance->invoice_id)
+            ->when($advance->exists, fn($q) => $q->where('id', '!=', $advance->id))
+            ->sum('advance_amount');
+
+        $totalPaid = $previousTotal + (float) $advance->advance_amount;
+
+        $due = max(0, (float) $invoice->final_amount - $totalPaid);
+
+        $advance->due_balance = round($due, 2);
+    }
+
+    // ─── Boot ─────────────────────────────────────────────────────────────────
+
     protected static function boot()
     {
         parent::boot();
 
-        // After creating an advance, update the customer's advanced_id
-        static::created(function ($advance) {
-            $customer = $advance->customer;
-            if ($customer) {
-                $customer->update(['advanced_id' => $advance->id]);
+        // Auto-calculate due_balance before saving
+        static::creating(function (Advanced $advance) {
+            static::calculateDueBalance($advance);
+
+            // Set date if not provided
+            if (empty($advance->date)) {
+                $advance->date = now();
             }
         });
 
-        // After creating an advance, update the invoice if it exists
-        static::created(function ($advance) {
-            if ($advance->invoice_id) {
-                $invoice = $advance->invoice;
-                // You can add any invoice-specific logic here
+        static::updating(function (Advanced $advance) {
+            static::calculateDueBalance($advance);
+        });
+
+        // After creating an advance, update the customer's advanced_id
+        static::created(function (Advanced $advance) {
+            if ($advance->customer) {
+                $advance->customer->update(['advanced_id' => $advance->id]);
             }
         });
     }
