@@ -18,11 +18,16 @@
   <!-- Toastr CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   <!-- Bootstrap 5 CSS (must come after app.min.css so it can override if needed) -->
+   <!-- SweetAlert2 CSS -->
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+
 
 
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="icon" href="{{ asset('assets/img/invoice.png') }}" type="image/png">
 </head>
+
 
 <body>
   <div id="app">
@@ -151,11 +156,11 @@
             </li>
 
            <li class="dropdown {{ request()->is('reports/invoices*') ? 'active' : '' }}">
-    <a href="{{ route('reports.invoices.index') }}" class="nav-link">
-        <i class="fas fa-chart-bar"></i>
-        <span>Invoice Report</span>
-    </a>
-</li>
+            <a href="{{ route('reports.invoices.index') }}" class="nav-link">
+              <i class="fas fa-chart-bar"></i>
+             <span>Invoice Report</span>
+            </a>
+            </li>
             <li class="dropdown">
               <a href="{{ route('logout') }}" class="nav-link mt-5"
                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -193,6 +198,9 @@
        5. Bootstrap 5 Bundle (includes Popper) — loaded LAST
           so it wins and data-bs-* attributes work correctly.
   ══════════════════════════════════════════════════════ --}}
+
+  <!-- SweetAlert2 JS -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- 1. jQuery (single copy) -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

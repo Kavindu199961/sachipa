@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 26, 2026 at 06:34 PM
+-- Generation Time: Mar 01, 2026 at 08:05 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,8 +43,9 @@ CREATE TABLE `advances` (
 --
 
 INSERT INTO `advances` (`id`, `invoice_id`, `invoice_customer_id`, `advance_amount`, `due_balance`, `date`, `created_at`, `updated_at`) VALUES
-(6, NULL, 9, 500.00, 4500.00, '2026-02-26', '2026-02-26 11:41:31', '2026-02-26 11:41:31'),
-(7, NULL, 9, 2500.00, 2000.00, '2026-02-27', '2026-02-26 11:46:06', '2026-02-26 11:46:06');
+(30, NULL, 29, 5000.00, 45000.00, '2026-03-01', '2026-03-01 01:33:59', '2026-03-01 01:33:59'),
+(31, NULL, 30, 500.00, 4500.00, '2026-03-01', '2026-03-01 01:34:20', '2026-03-01 01:34:20'),
+(32, NULL, 31, 50000.00, 35000.00, '2026-03-01', '2026-03-01 01:34:41', '2026-03-01 01:34:41');
 
 -- --------------------------------------------------------
 
@@ -166,7 +167,7 @@ CREATE TABLE `invoices` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `date` date NOT NULL,
-  `invoice_number` varchar(50) DEFAULT NULL
+  `invoice_number` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -174,15 +175,25 @@ CREATE TABLE `invoices` (
 --
 
 INSERT INTO `invoices` (`id`, `invoice_customer_id`, `item_name`, `rate`, `qty`, `item_discount`, `amount`, `final_amount`, `created_at`, `updated_at`, `date`, `invoice_number`) VALUES
-(21, 9, 'STIIP', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000001'),
-(22, 9, 'ILETS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000022'),
-(23, 9, 'TICKS MATERIAL 1', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000023'),
-(24, 9, 'TICKS MATERIAL 2', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000024'),
-(25, 9, 'POLES', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000025'),
-(26, 9, 'RAILINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000026'),
-(27, 9, 'FITTINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000027'),
-(28, 9, 'TIE BACKS', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000028'),
-(29, 9, 'TAILORING', 0.00, 1, 0.00, 0.00, 0.00, '2026-02-26 11:41:31', '2026-02-26 11:41:31', '2026-02-26', 'INV-000029');
+(107, 29, 'STIIP', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(108, 29, 'ILETS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(109, 29, 'TICKS MATERIAL 1', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(110, 29, 'TICKS MATERIAL 2', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(111, 29, 'POLES', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(112, 29, 'RAILINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(113, 29, 'FITTINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(114, 29, 'TIE BACKS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(115, 29, 'TAILORING', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:33:59', '2026-03-01 01:33:59', '2026-03-01', 'INV-000001'),
+(116, 30, 'STIIP', 500.00, 10, 0.00, 5000.00, 5000.00, '2026-03-01 01:34:20', '2026-03-01 01:34:20', '2026-03-01', 'INV-000002'),
+(117, 31, 'STIIP', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(118, 31, 'ILETS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(119, 31, 'TICKS MATERIAL 1', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(120, 31, 'TICKS MATERIAL 2', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(121, 31, 'POLES', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(122, 31, 'RAILINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(123, 31, 'FITTINGS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(124, 31, 'TIE BACKS', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003'),
+(125, 31, 'TAILORING', 0.00, 1, 0.00, 0.00, 0.00, '2026-03-01 01:34:41', '2026-03-01 01:34:41', '2026-03-01', 'INV-000003');
 
 -- --------------------------------------------------------
 
@@ -210,7 +221,9 @@ CREATE TABLE `invoice_customers` (
 --
 
 INSERT INTO `invoice_customers` (`id`, `name`, `phone_number`, `email`, `location`, `total_amount`, `final_discount`, `final_amount`, `invoice_id`, `advanced_id`, `created_at`, `updated_at`) VALUES
-(9, 'bathiya pasindu', '0774251774', 'ceylongit@gmail.com', 'kegalle', 5000.00, 0.00, 5000.00, 21, 7, '2026-02-26 11:41:31', '2026-02-26 11:46:06');
+(29, 'Kavindu Nelshan', '0765645303', 'www.kavi1999maxnelshan@gmail.com', NULL, 50000.00, 0.00, 50000.00, 107, 30, '2026-03-01 01:33:59', '2026-03-01 01:33:59'),
+(30, 'CeylonGIT', NULL, 'ceylongit@gmail.com', NULL, 5000.00, 0.00, 5000.00, 116, 31, '2026-03-01 01:34:20', '2026-03-01 01:34:20'),
+(31, 'Kavindu Nelshan', '0765645303', 'www.kavi1999maxnelshan@gmail.com', NULL, 85000.00, 0.00, 85000.00, 117, 32, '2026-03-01 01:34:41', '2026-03-01 01:34:41');
 
 -- --------------------------------------------------------
 
@@ -336,7 +349,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('RHhrRszp0TO4fgEyZnDJJ5eeUzxmlR2MKw73AgaL', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoia1pWOUZVZ1ZRM1k3WnZpM2lPaWpKQlpHUU5zSDdKOEo5elZXTktLNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9pbnZvaWNlcy85IjtzOjU6InJvdXRlIjtzOjEzOiJpbnZvaWNlcy5zaG93Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1772126224);
+('tUgIlXDtO0tVhTgPa7lDHvk97duCTdZIWj3tvZlE', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVnF5WnphYjB3d01RTVh2ZklBenFaZTd6VERXMTIyZVdVWG1aYmFndyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9pbnZvaWNlcyI7czo1OiJyb3V0ZSI7czoxNDoiaW52b2ljZXMuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1772348685);
 
 -- --------------------------------------------------------
 
@@ -366,8 +379,7 @@ CREATE TABLE `stock` (
 --
 
 INSERT INTO `stock` (`id`, `item_code`, `item_name`, `description`, `cost`, `whole_sale_price`, `retail_price`, `vender`, `stock_date`, `quantity`, `barcode`, `user_id`, `created_at`, `updated_at`) VALUES
-(1, NULL, 'food -3.5', NULL, 250.00, NULL, 350.00, NULL, '2026-02-18', 52, NULL, 1, '2026-02-18 01:48:23', '2026-02-18 02:38:06'),
-(2, NULL, 'food 34', NULL, 250.00, NULL, 454.00, NULL, '2026-02-18', 23, NULL, 1, '2026-02-18 01:51:37', '2026-02-18 02:40:05');
+(2, NULL, 'food 34', NULL, 250.00, NULL, 454.00, NULL, '2026-02-18', 25, NULL, 1, '2026-02-18 01:51:37', '2026-03-01 00:30:15');
 
 -- --------------------------------------------------------
 
@@ -467,7 +479,6 @@ ALTER TABLE `failed_jobs`
 --
 ALTER TABLE `invoices`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `invoice_number` (`invoice_number`),
   ADD KEY `invoices_invoice_customer_id_foreign` (`invoice_customer_id`);
 
 --
@@ -553,7 +564,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `advances`
 --
 ALTER TABLE `advances`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `customer`
@@ -577,13 +588,13 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
 
 --
 -- AUTO_INCREMENT for table `invoice_customers`
 --
 ALTER TABLE `invoice_customers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -607,7 +618,7 @@ ALTER TABLE `my_shop_details`
 -- AUTO_INCREMENT for table `stock`
 --
 ALTER TABLE `stock`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `today_items`

@@ -3,20 +3,6 @@
 @section('content')
 <div class="col-12 col-md-12 col-lg-12">
     <!-- Success Message -->
-    @if(session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: '',
-            text: '{{ session('success') }}',
-            showConfirmButton: true,
-            confirmButtonColor: '#0d6efd',
-            confirmButtonText: 'OK',
-            background: '#f8f9fa',
-            iconColor: '#28a745'
-        });
-    </script>
-    @endif 
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -606,5 +592,37 @@
         });
     });
 </script>
+
+<!-- Success Message -->
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: '',
+        text: '{{ session('success') }}',
+        showConfirmButton: true,
+        confirmButtonColor: '#0d6efd',
+        confirmButtonText: 'OK',
+        background: '#f8f9fa',
+        iconColor: '#28a745'
+    });
+</script>
+@endif 
+
+<!-- Error Message -->
+@if(session('error'))
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '{{ session('error') }}',
+        showConfirmButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'OK',
+        background: '#f8f9fa',
+        iconColor: '#dc3545'
+    });
+</script>
+@endif
 @endpush
 @endsection

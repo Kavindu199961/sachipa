@@ -9,18 +9,8 @@ class Invoice extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'invoices';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'invoice_number',
         'date',
@@ -33,27 +23,18 @@ class Invoice extends Model
         'final_amount'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'rate' => 'decimal:2',
-        'qty' => 'integer',
-        'item_discount' => 'decimal:2',
-        'amount' => 'decimal:2',
-        'final_amount' => 'decimal:2',
-        'date' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'invoice_number' => 'string',
+        'rate'           => 'decimal:2',
+        'qty'            => 'integer',
+        'item_discount'  => 'decimal:2',
+        'amount'         => 'decimal:2',
+        'final_amount'   => 'decimal:2',
+        'date'           => 'date',
+        'created_at'     => 'datetime',
+        'updated_at'     => 'datetime'
     ];
 
-    /**
-     * The attributes that should be mutated to dates.
-     *
-     * @var array
-     */
     protected $dates = [
         'date',
         'created_at',
@@ -117,14 +98,6 @@ class Invoice extends Model
     }
 
     /**
-     * Get the formatted invoice number.
-     */
-    public function getFormattedInvoiceNumberAttribute()
-    {
-        return $this->invoice_number ?? 'INV-' . str_pad($this->id, 6, '0', STR_PAD_LEFT);
-    }
-
-    /**
      * Get the formatted date.
      */
     public function getFormattedDateAttribute()
@@ -133,16 +106,26 @@ class Invoice extends Model
     }
 
     /**
-     * Generate invoice number.
+     * Generate the next sequential invoice number.
+     * Stored as INV-000001, INV-000002, INV-000003 ...
      */
-    public static function generateInvoiceNumber()
-    {
-        $lastInvoice = self::orderBy('id', 'desc')->first();
-        $nextId = $lastInvoice ? $lastInvoice->id + 1 : 1;
-        
-        return 'INV-' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
+    public static function generateInvoiceNumber(): string
+{
+    $last = self::orderBy('id', 'desc')
+                ->whereNotNull('invoice_number')
+                ->first();
+
+    if ($last && $last->invoice_number) {
+        // Extract number from "INV-000001" → 1
+        preg_match('/(\d+)$/', $last->invoice_number, $matches);
+        $lastNumber = isset($matches[1]) ? (int) $matches[1] : 0;
+        $next = $lastNumber + 1;
+    } else {
+        $next = 1;
     }
 
+    return 'INV-' . str_pad($next, 6, '0', STR_PAD_LEFT);
+}
     /**
      * Boot the model.
      */
@@ -152,27 +135,24 @@ class Invoice extends Model
 
         // Auto-calculate amount before creating
         static::creating(function ($invoice) {
-            $subTotal = $invoice->rate * $invoice->qty;
+            $subTotal       = $invoice->rate * $invoice->qty;
             $discountAmount = $subTotal * ($invoice->item_discount / 100);
-            $invoice->amount = round($subTotal - $discountAmount, 2);
+            $invoice->amount       = round($subTotal - $discountAmount, 2);
             $invoice->final_amount = $invoice->amount;
-            
-            // Generate invoice number if not provided
-            if (empty($invoice->invoice_number)) {
-                $invoice->invoice_number = self::generateInvoiceNumber();
-            }
-            
+
             // Set date if not provided
             if (empty($invoice->date)) {
                 $invoice->date = now();
             }
+            // NOTE: invoice_number is set explicitly in the controller
+            // (one number shared across all line items of the same invoice)
         });
 
         // Auto-calculate amount before updating
         static::updating(function ($invoice) {
-            $subTotal = $invoice->rate * $invoice->qty;
+            $subTotal       = $invoice->rate * $invoice->qty;
             $discountAmount = $subTotal * ($invoice->item_discount / 100);
-            $invoice->amount = round($subTotal - $discountAmount, 2);
+            $invoice->amount       = round($subTotal - $discountAmount, 2);
             $invoice->final_amount = $invoice->amount;
         });
 

@@ -3,38 +3,6 @@
 @section('content')
 <div class="container-fluid">
 
-    {{-- Flash messages --}}
-    @if(session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: '{{ session('success') }}',
-                showConfirmButton: true,
-                confirmButtonColor: '#0d6efd',
-                confirmButtonText: 'OK',
-                background: '#f8f9fa',
-                iconColor: '#28a745',
-                timer: 3000,
-                timerProgressBar: true
-            });
-        </script>
-    @endif
-    @if(session('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: '{{ session('error') }}',
-                showConfirmButton: true,
-                confirmButtonColor: '#0d6efd',
-                confirmButtonText: 'OK',
-                background: '#f8f9fa',
-                iconColor: '#dc3545'
-            });
-        </script>
-    @endif
-
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Invoice Management</h4>
@@ -95,12 +63,12 @@
                             <td>LKR {{ number_format($customer->total_final_amount, 2) }}</td>
                             <td>LKR {{ number_format($customer->total_advance_amount, 2) }}</td>
                             <td>
-                                <span class="badge bg-{{ $statusClass }}">
+                                <span class="badge bg-{{ $statusClass }} text-white">
                                     LKR {{ number_format($dueAmount, 2) }}
                                 </span>
                             </td>
                             <td>
-                                <span class="badge bg-{{ $statusClass }}">{{ $statusText }}</span>
+                                <span class="badge bg-{{ $statusClass }} text-white">{{ $statusText }}</span>
                             </td>
                             <td>
                                 <a href="{{ route('invoices.show', $customer->id) }}" class="btn btn-sm btn-info" title="View">
@@ -788,4 +756,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: '',
+        text: '{{ session('success') }}',
+        showConfirmButton: true,
+        confirmButtonColor: '#0d6efd',
+        confirmButtonText: 'OK',
+        background: '#f8f9fa',
+        iconColor: '#28a745'
+    });
+</script>
+@endif 
+
+<!-- Error Message -->
+@if(session('error'))
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '{{ session('error') }}',
+        showConfirmButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'OK',
+        background: '#f8f9fa',
+        iconColor: '#dc3545'
+    });
+</script>
+@endif
 @endpush
+
